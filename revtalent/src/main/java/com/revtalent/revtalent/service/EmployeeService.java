@@ -43,9 +43,21 @@ public class EmployeeService {
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
     }
 
+
     public List<Map<String, Object>> searchTeam(String query) {
-        return getTeam().stream()
-                .filter(e -> e.get("name").toString().toLowerCase().contains(query.toLowerCase()))
+        String q = query.toLowerCase();
+        return employeeRepository.findAll().stream()
+                .filter(emp -> emp.getUser() != null &&
+                        emp.getUser().getUsername() != null &&
+                        emp.getUser().getUsername().toLowerCase().contains(q))
+                .map(emp -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("id",   emp.getId());
+                    m.put("name", emp.getUser().getUsername());
+                    m.put("role", emp.getDesignation());
+                    m.put("dept", emp.getDepartment() != null ? emp.getDepartment().getName() : "N/A");
+                    return m;
+                })
                 .collect(Collectors.toList());
     }
 }

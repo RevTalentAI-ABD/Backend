@@ -24,7 +24,9 @@ public class LeaveService {
     public void approveLeave(Long id) {
         LeaveRequest leave = leaveRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Leave not found"));
-
+        if (leave.getStatus() != LeaveRequest.Status.APPLIED) {
+            throw new RuntimeException("Only pending leaves can be approved");
+        }
         leave.setStatus(LeaveRequest.Status.APPROVED);
         leaveRepository.save(leave);
     }
@@ -32,7 +34,9 @@ public class LeaveService {
     public void rejectLeave(Long id) {
         LeaveRequest leave = leaveRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Leave not found"));
-
+        if (leave.getStatus() != LeaveRequest.Status.APPLIED) {
+            throw new RuntimeException("Only pending leaves can be rejected");
+        }
         leave.setStatus(LeaveRequest.Status.REJECTED);
         leaveRepository.save(leave);
     }

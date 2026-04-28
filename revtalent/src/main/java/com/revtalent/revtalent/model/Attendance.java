@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.MonthDay;
 
 @Entity
 @Table(name = "attendance",
@@ -58,6 +59,7 @@ public class Attendance {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status = Status.PRESENT;
+
 
     public enum Status {
         PRESENT,
