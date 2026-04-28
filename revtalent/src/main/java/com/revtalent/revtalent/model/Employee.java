@@ -1,5 +1,6 @@
 package com.revtalent.revtalent.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,12 +10,14 @@ import java.util.List;
 
 @Entity
 @Table(name = "employee",
-        uniqueConstraints = {@UniqueConstraint(name = "uq_employee_code", columnNames = "employee_code"),
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uq_employee_code", columnNames = "employee_code"),
                 @UniqueConstraint(name = "uq_employee_user", columnNames = "user_id")
         },
-        indexes = {@Index(name = "idx_employee_department", columnList = "department_id"),
-                @Index(name = "idx_employee_manager",    columnList = "manager_id"),
-                @Index(name = "idx_employee_status",     columnList = "status")
+        indexes = {
+                @Index(name = "idx_employee_department", columnList = "department_id"),
+                @Index(name = "idx_employee_manager", columnList = "manager_id"),
+                @Index(name = "idx_employee_status", columnList = "status")
         }
 )
 @Getter
@@ -28,6 +31,7 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_employee_user"))
@@ -38,6 +42,7 @@ public class Employee {
             foreignKey = @ForeignKey(name = "fk_employee_department"))
     private Department department;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id",
             foreignKey = @ForeignKey(name = "fk_employee_manager"))
@@ -68,7 +73,8 @@ public class Employee {
     private String profilePictureUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "ENUM('ACTIVE','INACTIVE','ON_LEAVE') DEFAULT 'ACTIVE'")
+    @Column(nullable = false,
+            columnDefinition = "ENUM('ACTIVE','INACTIVE','ON_LEAVE') DEFAULT 'ACTIVE'")
     private Status status = Status.ACTIVE;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -77,6 +83,7 @@ public class Employee {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "manager", fetch = FetchType.LAZY)
     private List<Employee> reportees;
 
@@ -100,11 +107,15 @@ public class Employee {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
     public enum Status {
-        ACTIVE, INACTIVE, ON_LEAVE
+        ACTIVE,
+        INACTIVE,
+        ON_LEAVE
     }
 }
