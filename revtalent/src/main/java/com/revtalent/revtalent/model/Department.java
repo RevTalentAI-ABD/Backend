@@ -1,9 +1,11 @@
 package com.revtalent.revtalent.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "department",
@@ -14,7 +16,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor @Builder
+@AllArgsConstructor
+@Builder
 public class Department {
 
     @Id
@@ -27,17 +30,29 @@ public class Department {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "head_employee_id",
             foreignKey = @ForeignKey(name = "fk_department_head"))
+    @JsonIgnoreProperties({"department", "manager", "documents", "leaveRequests",
+            "leaveBalances", "attendanceRecords", "payrolls", "hibernateLazyInitializer"})
     private Employee head;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
-    private java.util.List<Employee> employees;
+    @JsonIgnoreProperties({"department", "manager", "documents", "leaveRequests",
+            "leaveBalances", "attendanceRecords", "payrolls", "hibernateLazyInitializer"})
+    private List<Employee> employees;
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }
-

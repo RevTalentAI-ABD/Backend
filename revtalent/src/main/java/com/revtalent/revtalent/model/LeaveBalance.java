@@ -6,8 +6,10 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "leave_balance", uniqueConstraints = {
-                @UniqueConstraint(name = "uq_leave_balance",columnNames = {"employee_id", "leave_type", "year"})
+@Table(name = "leave_balance",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uq_leave_balance",
+                        columnNames = {"employee_id", "leave_type", "year"})
         }
 )
 @Getter

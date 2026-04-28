@@ -1,5 +1,6 @@
 package com.revtalent.revtalent.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,16 +12,21 @@ import java.time.LocalDateTime;
 @Table(name = "leave_request",
         indexes = {
                 @Index(name = "idx_leave_emp_status", columnList = "employee_id, status"),
-                @Index(name = "idx_leave_dates",      columnList = "start_date, end_date")
+                @Index(name = "idx_leave_dates", columnList = "start_date, end_date")
         }
 )
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class LeaveRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_leave_employee"))
@@ -68,10 +74,18 @@ public class LeaveRequest {
     }
 
     public enum LeaveType {
-        ANNUAL, SICK, CASUAL, MATERNITY, PATERNITY, UNPAID
+        ANNUAL,
+        SICK,
+        CASUAL,
+        MATERNITY,
+        PATERNITY,
+        UNPAID
     }
 
     public enum Status {
-        APPLIED, APPROVED, REJECTED, CANCELLED
+        APPLIED,
+        APPROVED,
+        REJECTED,
+        CANCELLED
     }
 }

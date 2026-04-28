@@ -2,6 +2,7 @@ package com.revtalent.revtalent.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -11,11 +12,15 @@ import java.time.LocalDateTime;
                 @UniqueConstraint(name = "uq_candidate_job", columnNames = {"job_id", "email"})
         },
         indexes = {
-                @Index(name = "idx_candidate_status",      columnList = "status"),
-                @Index(name = "idx_candidate_interviewer",  columnList = "interviewer_id")
+                @Index(name = "idx_candidate_status", columnList = "status"),
+                @Index(name = "idx_candidate_interviewer", columnList = "interviewer_id")
         }
 )
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Candidate {
 
     @Id
@@ -63,8 +68,8 @@ public class Candidate {
 
     @PrePersist
     protected void onCreate() {
-        appliedAt  = LocalDateTime.now();
-        updatedAt  = LocalDateTime.now();
+        appliedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
@@ -73,6 +78,12 @@ public class Candidate {
     }
 
     public enum Status {
-        APPLIED, SCREENING, INTERVIEW, OFFERED, HIRED, REJECTED, WITHDRAWN
+        APPLIED,
+        SCREENING,
+        INTERVIEW,
+        OFFERED,
+        HIRED,
+        REJECTED,
+        WITHDRAWN
     }
 }
