@@ -82,6 +82,8 @@ public class Employee {
         updatedAt = LocalDateTime.now();
     }
 
+
+
     public enum Status {
         ACTIVE,
         INACTIVE,
