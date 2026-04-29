@@ -2,6 +2,7 @@ package com.revtalent.revtalent.controller;
 
 import com.revtalent.revtalent.service.ManagerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,17 +17,17 @@ public class ReportController {
     private final ManagerService managerService;
 
     @GetMapping("/productivity")
-    public List<Map<String, Object>> productivity() {
-        return managerService.getProductivity();
+    public ResponseEntity<List<Map<String, Object>>> productivity() {
+        return ResponseEntity.ok(managerService.getProductivity());
     }
 
     @GetMapping("/attendance")
-    public String attendanceReport() {
-        return "Attendance report";
+    public ResponseEntity<Map<String, Object>> attendanceReport() {
+        return ResponseEntity.ok(managerService.getAttendanceReport());
     }
 
     @GetMapping("/team-summary")
-    public String teamSummary() {
-        return "Team summary";
+    public ResponseEntity<Map<String, Object>> teamSummary() {
+        return ResponseEntity.ok(managerService.getTeamSummary());
     }
 }

@@ -1,11 +1,12 @@
 package com.revtalent.revtalent.controller;
 
+import com.revtalent.revtalent.dto.notification.NotificationResponse;
 import com.revtalent.revtalent.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/manager/notifications")
@@ -16,24 +17,24 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping
-    public List<Map<String, Object>> getNotifications() {
-        return notificationService.getNotifications();
+    public ResponseEntity<List<NotificationResponse>> getNotifications() {
+        return ResponseEntity.ok(notificationService.getNotifications());
     }
 
     @GetMapping("/unread")
-    public List<Map<String, Object>> getUnread() {
-        return notificationService.getUnreadNotifications();
+    public ResponseEntity<List<NotificationResponse>> getUnread() {
+        return ResponseEntity.ok(notificationService.getUnreadNotifications());
     }
 
     @PutMapping("/{id}/read")
-    public String markRead(@PathVariable Long id) {
+    public ResponseEntity<String> markRead(@PathVariable Long id) {
         notificationService.markAsRead(id);
-        return "Marked as read";
+        return ResponseEntity.ok("Marked as read");
     }
 
     @PutMapping("/read-all")
-    public String markAllRead() {
+    public ResponseEntity<String> markAllRead() {
         notificationService.markAllAsRead();
-        return "All marked as read";
+        return ResponseEntity.ok("All marked as read");
     }
 }

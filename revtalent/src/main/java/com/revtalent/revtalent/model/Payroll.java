@@ -56,11 +56,9 @@ public class Payroll {
     @Column(name = "tax_deduction", nullable = false, precision = 12, scale = 2)
     private BigDecimal taxDeduction = BigDecimal.ZERO;
 
-    // DB-generated column (recommended approach)
     @Column(name = "net_pay", insertable = false, updatable = false, precision = 12, scale = 2)
     private BigDecimal netPay;
 
-    // Optional: for service-layer usage if needed
     @Transient
     private BigDecimal netSalary;
 
