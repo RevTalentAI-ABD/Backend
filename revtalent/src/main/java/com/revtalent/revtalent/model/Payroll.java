@@ -3,7 +3,7 @@ package com.revtalent.revtalent.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-        import java.math.BigDecimal;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,7 +16,11 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_payroll_period", columnList = "pay_year, pay_month")
         }
 )
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Payroll {
 
     @Id
@@ -52,9 +56,13 @@ public class Payroll {
     @Column(name = "tax_deduction", nullable = false, precision = 12, scale = 2)
     private BigDecimal taxDeduction = BigDecimal.ZERO;
 
-    // Mirrors the MySQL GENERATED column — read-only from DB
+    // DB-generated column (recommended approach)
     @Column(name = "net_pay", insertable = false, updatable = false, precision = 12, scale = 2)
     private BigDecimal netPay;
+
+    // Optional: for service-layer usage if needed
+    @Transient
+    private BigDecimal netSalary;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false,
@@ -70,6 +78,8 @@ public class Payroll {
     }
 
     public enum Status {
-        PENDING, PROCESSED, PAID
+        PENDING,
+        PROCESSED,
+        PAID
     }
 }

@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class EmployeeDocument {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,7 +45,13 @@ public class EmployeeDocument {
     protected void onCreate() {
         uploadedAt = LocalDateTime.now();
     }
+
     public enum DocType {
-        OFFER_LETTER, ID_PROOF, RESUME, CONTRACT, CERTIFICATE, OTHER
+        OFFER_LETTER,
+        ID_PROOF,
+        RESUME,
+        CONTRACT,
+        CERTIFICATE,
+        OTHER
     }
 }

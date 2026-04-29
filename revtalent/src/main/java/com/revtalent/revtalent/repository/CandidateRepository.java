@@ -1,7 +1,16 @@
 package com.revtalent.revtalent.repository;
 
 import com.revtalent.revtalent.model.Candidate;
+import com.revtalent.revtalent.model.JobPosting;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface CandidateRepository extends JpaRepository<Candidate, Long> {
+
+    List<Candidate> findByStatus(Candidate.Status status);
+
+    List<Candidate> findByJobPosting(JobPosting jobPosting);
+
+    List<Candidate> findByEmail(String email);
 }
