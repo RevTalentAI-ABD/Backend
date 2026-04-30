@@ -7,7 +7,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface PayrollRepository extends JpaRepository<Payroll, Long> {
 
     List<Payroll> findByEmployee_IdOrderByPayYearDescPayMonthDesc(Long empId);

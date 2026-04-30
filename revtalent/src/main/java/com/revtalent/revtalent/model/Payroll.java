@@ -154,10 +154,15 @@ public class Payroll {
     @Builder.Default
     private BigDecimal taxDeduction = BigDecimal.ZERO;
 
+
     // Matches your existing DB column name
     @Column(name = "net_pay", nullable = false, precision = 12, scale = 2)
     @Builder.Default
     private BigDecimal netPay = BigDecimal.ZERO;
+
+
+    @Transient
+    private BigDecimal netSalary;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

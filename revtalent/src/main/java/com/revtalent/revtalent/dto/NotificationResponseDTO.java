@@ -20,7 +20,7 @@ public class NotificationResponseDTO {
     public static NotificationResponseDTO from(Notification n) {
         return NotificationResponseDTO.builder()
                 .id(n.getId())
-                .employeeId(n.getEmployee().getId())
+                .employeeId(n.getEmployee() != null ? n.getEmployee().getId() : null)
                 .message(n.getMessage())
                 .type(n.getType())
                 .read(n.isRead())

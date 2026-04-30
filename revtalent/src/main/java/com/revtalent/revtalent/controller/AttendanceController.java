@@ -7,13 +7,23 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.revtalent.revtalent.dto.attendance.AttendanceResponse;
+import com.revtalent.revtalent.model.Attendance;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/attendance")
 @RequiredArgsConstructor
+
+@CrossOrigin(origins = "http://localhost:5173")
+
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
@@ -63,5 +73,26 @@ public class AttendanceController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return ResponseEntity.ok(attendanceService.getPresentCount(empId, from, to));
+    }
+    @GetMapping
+    public ResponseEntity<List<AttendanceResponse>> getAttendance() {
+        return ResponseEntity.ok(attendanceService.getAttendance());
+    }
+
+    @GetMapping("/summary")
+        public ResponseEntity<List<Map<String, Object>>> getSummary() {
+            return ResponseEntity.ok(attendanceService.getAttendanceSummary());
+        }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> export() {
+        byte[] csvData = attendanceService.exportAttendanceAsCsv();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"attendance_export.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .contentLength(csvData.length)
+                .body(csvData);
     }
 }

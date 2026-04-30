@@ -1,6 +1,7 @@
 package com.revtalent.revtalent.controller;
 
 import com.revtalent.revtalent.dto.NotificationResponseDTO;
+import com.revtalent.revtalent.dto.notification.NotificationResponse;
 import com.revtalent.revtalent.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,9 +12,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class NotificationController {
 
     private final NotificationService notificationService;
+
+    // ── Employee endpoints (empId scoped) ─────────────────────────────────────
 
     @GetMapping("/{empId}")
     public ResponseEntity<List<NotificationResponseDTO>> getAll(@PathVariable Long empId) {
@@ -36,8 +40,26 @@ public class NotificationController {
     }
 
     @PutMapping("/{empId}/read-all")
-    public ResponseEntity<Void> markAll(@PathVariable Long empId) {
+    public ResponseEntity<Void> markAllForEmployee(@PathVariable Long empId) {
         notificationService.markAllAsRead(empId);
         return ResponseEntity.noContent().build();
+    }
+
+    // ── Manager endpoints (global, no empId scope) ────────────────────────────
+
+    @GetMapping
+    public ResponseEntity<List<NotificationResponse>> getAllNotifications() {
+        return ResponseEntity.ok(notificationService.getAllNotifications());
+    }
+
+    @GetMapping("/unread")
+    public ResponseEntity<List<NotificationResponse>> getAllUnread() {
+        return ResponseEntity.ok(notificationService.getAllUnreadNotifications());
+    }
+
+    @PutMapping("/read-all")
+    public ResponseEntity<String> markAllReadGlobal() {
+        notificationService.markAllAsReadGlobal();
+        return ResponseEntity.ok("All marked as read");
     }
 }

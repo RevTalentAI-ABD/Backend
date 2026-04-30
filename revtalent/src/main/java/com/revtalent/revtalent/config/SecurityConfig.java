@@ -23,17 +23,28 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs.yaml",
+                                "/api/manager/**",
+                                "/api/attendance/**",
+                                "/api/employees/**",   // ✅ add this
+                                "/api/leaves/**",      // ✅ add this
+                                "/api/notifications/**",
+                                "/api/payroll/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 );
+
         return http.build();
     }
 
-    // ── ADD THIS ─────────────────────────────────────────────────────────────
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    // ─────────────────────────────────────────────────────────────────────────
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

@@ -1,5 +1,4 @@
 package com.revtalent.revtalent.model;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,5 +43,6 @@ public class Notification {
         LEAVE,
         PAYROLL,
         SYSTEM
+
     }
 }

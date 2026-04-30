@@ -168,9 +168,4 @@ public class PayrollController {
         return ResponseEntity.ok(payrollService.bulkProcess(month, year));
     }
 
-    @DeleteMapping("/{payrollId}")
-    public ResponseEntity<Void> delete(@PathVariable Long payrollId) {
-        payrollService.delete(payrollId);
-        return ResponseEntity.noContent().build();
-    }
 }

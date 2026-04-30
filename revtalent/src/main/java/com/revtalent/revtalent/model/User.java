@@ -2,6 +2,7 @@ package com.revtalent.revtalent.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,6 +28,7 @@ import java.util.List;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "accountNonExpired",
         "accountNonLocked", "credentialsNonExpired", "enabled",
         "authorities", "password", "passwordHash"})
+
 public class User implements UserDetails {
 
     @Id
@@ -61,6 +63,10 @@ public class User implements UserDetails {
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
+    @JsonIgnore
+    @Column(name = "refresh_token_hash")
+    private String refreshTokenHash;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -90,12 +96,14 @@ public class User implements UserDetails {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
-    @Override @JsonIgnore public String getPassword()              { return passwordHash; }
-    @Override public String getUsername()                          { return username; }
-    @Override @JsonIgnore public boolean isAccountNonExpired()     { return true; }
-    @Override @JsonIgnore public boolean isAccountNonLocked()      { return true; }
-    @Override @JsonIgnore public boolean isCredentialsNonExpired() { return true; }
-    @Override @JsonIgnore public boolean isEnabled()               { return isActive; }
+
+    @Override public String getPassword()              { return passwordHash; }
+    @Override public String getUsername()              { return username; }
+    @Override public boolean isAccountNonExpired()     { return true; }
+    @Override public boolean isAccountNonLocked()      { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled()               { return isActive; }
+
 
     public enum Role {
         EMPLOYEE,

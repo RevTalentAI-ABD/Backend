@@ -13,8 +13,10 @@ public class SwaggerConfig {
     public OpenAPI managerModuleAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("RevTalent - Employee Module API")
+
+                        .title("RevTalent - Employee Module and Manager Module API")
                         .description("REST APIs for the Employee module — attendance, leaves, emploee, notifications, payroll")
+
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("RevTalent Dev Team")
