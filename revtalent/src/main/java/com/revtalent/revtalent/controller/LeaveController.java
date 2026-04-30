@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/leaves")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class LeaveController {
 
     private final LeaveService leaveService;
@@ -30,14 +30,19 @@ public class LeaveController {
         return ResponseEntity.ok(leaveService.getLeaveHistory(empId));
     }
 
+    @GetMapping("/{leaveId}")
+    public ResponseEntity<LeaveHistoryDTO> getLeave(@PathVariable Long leaveId) {
+        return ResponseEntity.ok(leaveService.getLeaveById(leaveId));
+    }
+
     @PostMapping("/apply")
     public ResponseEntity<?> apply(@RequestBody LeaveApplyDTO dto) {
         return ResponseEntity.ok(leaveService.applyLeave(dto));
     }
 
-    @GetMapping("/{leaveId}")
-    public ResponseEntity<LeaveHistoryDTO> getLeave(@PathVariable Long leaveId) {
-        return ResponseEntity.ok(leaveService.getLeaveById(leaveId));
+    @PostMapping("/apply/hr")
+    public ResponseEntity<?> applyViaHR(@RequestBody LeaveRequestDTO req) {
+        return ResponseEntity.ok(leaveService.apply(req));
     }
 
     @DeleteMapping("/{leaveId}/cancel")
@@ -46,7 +51,7 @@ public class LeaveController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Manager endpoints ─────────────────────────────────────────────────────
+    // ── Manager / HR endpoints ────────────────────────────────────────────────
 
     @GetMapping
     public ResponseEntity<List<LeaveRequestDTO>> getAllLeaves() {
@@ -59,15 +64,16 @@ public class LeaveController {
     }
 
     @PutMapping("/{id}/approve")
-    public ResponseEntity<String> approve(@PathVariable Long id) {
+    public ResponseEntity<?> approve(@PathVariable Long id) {
         leaveService.approveLeave(id);
-        return ResponseEntity.ok("Approved");
+        return ResponseEntity.ok("Leave approved successfully");
     }
 
     @PutMapping("/{id}/reject")
-    public ResponseEntity<String> reject(@PathVariable Long id,
-                                         @RequestParam(required = false) String reason) {
+    public ResponseEntity<?> reject(
+            @PathVariable Long id,
+            @RequestParam(required = false) String reason) {
         leaveService.rejectLeave(id, reason);
-        return ResponseEntity.ok("Rejected");
+        return ResponseEntity.ok("Leave rejected successfully");
     }
 }

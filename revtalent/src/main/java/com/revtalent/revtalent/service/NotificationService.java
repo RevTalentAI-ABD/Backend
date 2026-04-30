@@ -1,6 +1,7 @@
 package com.revtalent.revtalent.service;
 
 import com.revtalent.revtalent.dto.NotificationResponseDTO;
+import com.revtalent.revtalent.dto.notification.NotificationRequest;
 import com.revtalent.revtalent.dto.notification.NotificationResponse;
 import com.revtalent.revtalent.model.Notification;
 import com.revtalent.revtalent.repository.NotificationRepository;
@@ -27,6 +28,16 @@ public class NotificationService {
                 .unread(!n.isRead())
                 .createdAt(n.getCreatedAt())
                 .build();
+    }
+
+    // ── Create Notification ───────────────────────────────────────────────────
+
+    @Transactional
+    public Notification create(NotificationRequest dto) {
+        Notification n = new Notification();
+        n.setMessage(dto.getMessage());
+        n.setType(Notification.Type.valueOf(dto.getType()));
+        return notificationRepository.save(n);
     }
 
     // ── Employee endpoints (empId scoped) ─────────────────────────────────────
@@ -95,4 +106,5 @@ public class NotificationService {
         unread.forEach(n -> n.setRead(true));
         notificationRepository.saveAll(unread);
     }
+
 }

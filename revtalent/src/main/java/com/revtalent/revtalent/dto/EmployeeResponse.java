@@ -32,6 +32,7 @@ public class EmployeeResponse {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long managerId;
 
     public static EmployeeResponse from(Employee emp) {
         EmployeeResponse.EmployeeResponseBuilder builder = EmployeeResponse.builder()
@@ -43,6 +44,7 @@ public class EmployeeResponse {
                 .address(emp.getAddress())
                 .profilePictureUrl(emp.getProfilePictureUrl())
                 .status(emp.getStatus() != null ? emp.getStatus().name() : null)
+                .managerId(emp.getManager() != null ? emp.getManager().getId() : null)
                 .createdAt(emp.getCreatedAt())
                 .updatedAt(emp.getUpdatedAt());
 

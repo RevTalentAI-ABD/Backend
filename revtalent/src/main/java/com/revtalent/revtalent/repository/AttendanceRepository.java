@@ -1,6 +1,8 @@
 package com.revtalent.revtalent.repository;
 
 import com.revtalent.revtalent.model.Attendance;
+import com.revtalent.revtalent.model.Employee;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,4 +40,24 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     int countByStatus(Attendance.Status status);
 
     int countByStatusAndWorkDate(Attendance.Status status, LocalDate workDate);
+    Optional<Attendance> findByEmployeeAndWorkDate(Employee employee, LocalDate workDate);
+
+    @EntityGraph(attributePaths = {
+            "employee",
+            "employee.user",
+            "employee.department"
+    })
+    List<Attendance> findAll();
+
+    List<Attendance> findByEmployee(Employee employee);
+
+
+    // ✅ For summary - count by status and date range
+    long countByStatusAndWorkDateBetween(Attendance.Status status, LocalDate from, LocalDate to);
+
+    // ✅ For summary - count by attendance type and date range
+    long countByAttendanceTypeAndWorkDateBetween(Attendance.AttendanceType type, LocalDate from, LocalDate to);
+
+    // ✅ For summary - date range fetch
+    List<Attendance> findByWorkDateBetween(LocalDate from, LocalDate to);
 }

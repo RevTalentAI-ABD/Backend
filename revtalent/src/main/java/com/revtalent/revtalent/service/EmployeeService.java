@@ -5,6 +5,8 @@ import com.revtalent.revtalent.dto.EmployeeResponse;
 import com.revtalent.revtalent.dto.employee.EmployeeResponseManager;
 import com.revtalent.revtalent.dto.PatchEmployeeRequest;
 import com.revtalent.revtalent.dto.UpdateEmployeeRequest;
+import com.revtalent.revtalent.dto.employee.EmployeeUpdateRequest;
+import com.revtalent.revtalent.dto.employee.ManagerProfileResponse;
 import com.revtalent.revtalent.exception.ResourceNotFoundException;
 import com.revtalent.revtalent.model.Department;
 import com.revtalent.revtalent.model.Employee;
@@ -17,9 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import com.revtalent.revtalent.dto.employee.ManagerProfileResponse;
-
 import java.util.stream.Collectors;
 
 @Service
@@ -30,14 +29,58 @@ public class EmployeeService {
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // ── Mapper ────────────────────────────────────────────────────────────────
 
+    private EmployeeResponse toResponse(Employee emp) {
+        return EmployeeResponse.builder()
+                .id(emp.getId())
+                .employeeCode(emp.getEmployeeCode())
+                .name(emp.getUser() != null ? emp.getUser().getName() : "N/A")
+                .username(emp.getUser() != null ? emp.getUser().getUsername() : "N/A")
+                .email(emp.getUser() != null ? emp.getUser().getEmail() : "N/A")
+                .role(emp.getUser() != null && emp.getUser().getRole() != null
+                        ? emp.getUser().getRole().name() : null)
+                .designation(emp.getDesignation())
+                .departmentId(emp.getDepartment() != null ? emp.getDepartment().getId() : null)
+                .departmentName(emp.getDepartment() != null ? emp.getDepartment().getName() : "N/A")
+                .managerId(emp.getManager() != null ? emp.getManager().getId() : null)
+                .status(emp.getStatus() != null ? emp.getStatus().name() : null)
+                .phone(emp.getPhone())
+                .address(emp.getAddress())
+                .profilePictureUrl(emp.getProfilePictureUrl())
+                .joiningDate(emp.getJoiningDate())
+                .build();
+    }
+
+    // ── Read ──────────────────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public List<EmployeeResponse> getAllEmployees() {
         return employeeRepository.findAll()
                 .stream()
-                .map(EmployeeResponse::from)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    // From HRModule — returns only ACTIVE employees
+    @Transactional(readOnly = true)
+    public List<EmployeeResponse> getAll() {
+        return employeeRepository.findByStatus(Employee.Status.ACTIVE)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public EmployeeResponse getEmployeeById(Long id) {
+        return toResponse(employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id)));
+    }
+
+    // Alias used by HRModule routes
+    @Transactional(readOnly = true)
+    public EmployeeResponse getById(Long id) {
+        return getEmployeeById(id);
     }
 
     // ── Create ────────────────────────────────────────────────────────────────
@@ -87,7 +130,13 @@ public class EmployeeService {
             emp.setDepartment(dept);
         }
 
-        return EmployeeResponse.from(employeeRepository.save(emp));
+        return toResponse(employeeRepository.save(emp));
+    }
+
+    // Lightweight create from HRModule (accepts raw Employee entity)
+    @Transactional
+    public EmployeeResponse create(Employee emp) {
+        return toResponse(employeeRepository.save(emp));
     }
 
     // ── Update ────────────────────────────────────────────────────────────────
@@ -95,7 +144,6 @@ public class EmployeeService {
     @Transactional
     public EmployeeResponse updateEmployee(Long id, UpdateEmployeeRequest request) {
         Employee emp = findOrThrow(id);
-
 
         if (request.getDesignation() != null && !request.getDesignation().isBlank()) {
             emp.setDesignation(request.getDesignation());
@@ -116,7 +164,36 @@ public class EmployeeService {
             emp.setStatus(parsedStatus);
         }
 
-        return EmployeeResponse.from(employeeRepository.save(emp));
+        return toResponse(employeeRepository.save(emp));
+    }
+
+    // From HRModule — accepts EmployeeUpdateRequest DTO
+    @Transactional
+    public EmployeeResponse update(Long id, EmployeeUpdateRequest req) {
+        Employee emp = findOrThrow(id);
+
+        if (req.getDesignation() != null) emp.setDesignation(req.getDesignation());
+        if (req.getPhone() != null) emp.setPhone(req.getPhone());
+        if (req.getAddress() != null) emp.setAddress(req.getAddress());
+
+        return toResponse(employeeRepository.save(emp));
+    }
+
+    @Transactional
+    public EmployeeResponse patchPersonalInfo(Long id, PatchEmployeeRequest request) {
+        Employee emp = findOrThrow(id);
+
+        if (request.getPhone() != null) emp.setPhone(request.getPhone());
+        if (request.getAddress() != null) emp.setAddress(request.getAddress());
+        if (request.getDesignation() != null) emp.setDesignation(request.getDesignation());
+        if (request.getProfilePictureUrl() != null) emp.setProfilePictureUrl(request.getProfilePictureUrl());
+
+        if (emp.getUser() != null) {
+            if (request.getName() != null) emp.getUser().setName(request.getName());
+            if (request.getEmail() != null) emp.getUser().setEmail(request.getEmail());
+        }
+
+        return toResponse(employeeRepository.save(emp));
     }
 
     // ── Delete ────────────────────────────────────────────────────────────────
@@ -127,68 +204,21 @@ public class EmployeeService {
         employeeRepository.deleteById(id);
     }
 
-    // ── Misc ──────────────────────────────────────────────────────────────────
-
-    @Transactional(readOnly = true)
-    public List<String> getAnnouncements() {
-        return List.of("Welcome to RevTalent!", "Q2 performance reviews begin next week.");
-    }
-
-    // ── Private helpers ───────────────────────────────────────────────────────
-
-    private Employee findOrThrow(Long id) {
-        return employeeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
-    }
-
+    // From HRModule — soft delete (sets status to INACTIVE)
     @Transactional
-    public EmployeeResponse patchPersonalInfo(Long id, PatchEmployeeRequest request) {
+    public boolean delete(Long id) {
         Employee emp = findOrThrow(id);
-
-        // Update employee fields
-        if (request.getPhone() != null) emp.setPhone(request.getPhone());
-        if (request.getAddress() != null) emp.setAddress(request.getAddress());
-        if (request.getDesignation() != null) emp.setDesignation(request.getDesignation());
-        if (request.getProfilePictureUrl() != null) emp.setProfilePictureUrl(request.getProfilePictureUrl());
-
-        // Update user fields
-        if (emp.getUser() != null) {
-            if (request.getName() != null) emp.getUser().setName(request.getName());
-            if (request.getEmail() != null) emp.getUser().setEmail(request.getEmail());
-        }
-
-        return EmployeeResponse.from(employeeRepository.save(emp));
+        emp.setStatus(Employee.Status.INACTIVE);
+        employeeRepository.save(emp);
+        return true;
     }
+
+    // ── Search & Team ─────────────────────────────────────────────────────────
 
     public List<EmployeeResponse> getTeam() {
         return employeeRepository.findAll().stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
-    }
-
-    private EmployeeResponse toResponse(Employee emp) {
-        return EmployeeResponse.builder()
-                .id(emp.getId())
-                .name(emp.getUser() != null ? emp.getUser().getName() : "N/A")
-                .username(emp.getUser() != null ? emp.getUser().getUsername() : "N/A")
-                .email(emp.getUser() != null ? emp.getUser().getEmail() : "N/A")
-                .role(emp.getUser() != null && emp.getUser().getRole() != null
-                        ? emp.getUser().getRole().name() : null)
-                .designation(emp.getDesignation())
-                .departmentId(emp.getDepartment() != null ? emp.getDepartment().getId() : null)
-                .departmentName(emp.getDepartment() != null ? emp.getDepartment().getName() : "N/A")  // ✅ not .department()
-                .status(emp.getStatus() != null ? emp.getStatus().name() : null)
-                .employeeCode(emp.getEmployeeCode())
-                .phone(emp.getPhone())
-                .address(emp.getAddress())
-                .profilePictureUrl(emp.getProfilePictureUrl())
-                .joiningDate(emp.getJoiningDate())
-                .build();
-    }
-    @Transactional(readOnly = true)
-    public EmployeeResponse getEmployeeById(Long id) {
-        return toResponse(employeeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id)));
     }
 
     public List<EmployeeResponse> searchTeam(String query) {
@@ -200,6 +230,8 @@ public class EmployeeService {
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
+
+    // ── Manager ───────────────────────────────────────────────────────────────
 
     public ManagerProfileResponse getManagerProfile(Long managerId) {
         Employee manager = employeeRepository.findById(managerId)
@@ -224,5 +256,19 @@ public class EmployeeService {
                 .status(manager.getStatus().name())
                 .teamSize(teamSize)
                 .build();
+    }
+
+    // ── Misc ──────────────────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<String> getAnnouncements() {
+        return List.of("Welcome to RevTalent!", "Q2 performance reviews begin next week.");
+    }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
+
+    private Employee findOrThrow(Long id) {
+        return employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
     }
 }

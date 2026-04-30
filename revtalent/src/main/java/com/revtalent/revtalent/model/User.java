@@ -1,6 +1,7 @@
 package com.revtalent.revtalent.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.*;
@@ -28,6 +29,7 @@ import java.util.List;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "accountNonExpired",
         "accountNonLocked", "credentialsNonExpired", "enabled",
         "authorities", "password", "passwordHash"})
+
 
 public class User implements UserDetails {
 
@@ -95,7 +97,6 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
-
 
     @Override public String getPassword()              { return passwordHash; }
     @Override public String getUsername()              { return username; }

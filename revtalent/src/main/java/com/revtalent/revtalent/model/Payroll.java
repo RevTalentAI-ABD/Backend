@@ -163,7 +163,6 @@ public class Payroll {
 
     @Transient
     private BigDecimal netSalary;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

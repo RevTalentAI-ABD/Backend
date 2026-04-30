@@ -2,6 +2,7 @@ package com.revtalent.revtalent.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -30,14 +32,15 @@ public class SecurityConfig {
                                 "/v3/api-docs.yaml",
                                 "/api/manager/**",
                                 "/api/attendance/**",
-                                "/api/employees/**",   // ✅ add this
-                                "/api/leaves/**",      // ✅ add this
+                                "/api/employees/**",
+                                "/api/leaves/**",
                                 "/api/notifications/**",
-                                "/api/payroll/**"
+                                "/api/payroll/**",
+                                "/api/hr/**",
+                                "/api/recruitment/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );
-
         return http.build();
     }
 
@@ -53,7 +56,6 @@ public class SecurityConfig {
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;

@@ -3,6 +3,7 @@ package com.revtalent.revtalent.service;
 import com.revtalent.revtalent.dto.AttendanceDTO;
 import com.revtalent.revtalent.dto.AttendanceResponseDTO;
 import com.revtalent.revtalent.dto.attendance.AttendanceResponse;
+import com.revtalent.revtalent.dto.attendance.AttendanceSummaryResponse;
 import com.revtalent.revtalent.model.Attendance;
 import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.repository.AttendanceRepository;
@@ -32,22 +33,23 @@ public class AttendanceService {
     }
 
     private AttendanceResponse toDTO(Attendance a) {
-        return AttendanceResponse.builder()
-                .id(a.getId())
-                .employeeId(a.getEmployee() != null ? a.getEmployee().getId() : null)
-                .employeeName(a.getEmployee() != null && a.getEmployee().getUser() != null
-                        ? a.getEmployee().getUser().getUsername() : "N/A")
-                .department(a.getEmployee() != null && a.getEmployee().getDepartment() != null
-                        ? a.getEmployee().getDepartment().getName() : "N/A")
-                .workDate(a.getWorkDate())
-                .checkIn(a.getCheckIn())
-                .checkOut(a.getCheckOut())
-                .durationMin(a.getDurationMin())
-                .attendanceType(a.getAttendanceType().name())
-                .status(a.getStatus().name())
-                .isRegularized(a.isRegularized())
-                .notes(a.getNotes())
-                .build();
+        AttendanceResponse res = new AttendanceResponse();
+        res.setId(a.getId());
+        res.setEmployeeId(a.getEmployee() != null ? a.getEmployee().getId() : null);
+        res.setEmployeeName(a.getEmployee() != null && a.getEmployee().getUser() != null
+                ? a.getEmployee().getUser().getName() : "N/A");
+        res.setEmployeeCode(a.getEmployee() != null ? a.getEmployee().getEmployeeCode() : null);
+        res.setDepartment(a.getEmployee() != null && a.getEmployee().getDepartment() != null
+                ? a.getEmployee().getDepartment().getName() : "N/A");
+        res.setWorkDate(a.getWorkDate());
+        res.setCheckIn(a.getCheckIn());
+        res.setCheckOut(a.getCheckOut());
+        res.setDurationMin(a.getDurationMin());
+        res.setAttendanceType(String.valueOf(a.getAttendanceType()));
+        res.setStatus(String.valueOf(a.getStatus()));
+        res.setRegularized(a.isRegularized());
+        res.setNotes(a.getNotes());
+        return res;
     }
 
     // ── Employee methods ────────────────────────────────────────────────────
@@ -168,6 +170,23 @@ public class AttendanceService {
                 .collect(Collectors.toList());
     }
 
+    // getAll() — uses same toDTO mapper, no duplicate mapToResponse needed
+    public List<AttendanceResponse> getAll() {
+        return attendanceRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public AttendanceSummaryResponse getSummary(LocalDate from, LocalDate to) {
+        long totalEmployees = employeeRepository.count();
+        long present  = attendanceRepository.countByStatusAndWorkDateBetween(Attendance.Status.PRESENT,  from, to);
+        long absent   = attendanceRepository.countByStatusAndWorkDateBetween(Attendance.Status.ABSENT,   from, to);
+        long wfh      = attendanceRepository.countByStatusAndWorkDateBetween(Attendance.Status.WFH,      from, to);
+        long onLeave  = attendanceRepository.countByStatusAndWorkDateBetween(Attendance.Status.ON_LEAVE, from, to);
+        long field    = attendanceRepository.countByAttendanceTypeAndWorkDateBetween(Attendance.AttendanceType.FIELD, from, to);
+        return new AttendanceSummaryResponse(totalEmployees, present, absent, wfh, onLeave, field);
+    }
+
     public List<Map<String, Object>> getAttendanceSummary() {
         return attendanceRepository.findAll().stream()
                 .collect(Collectors.groupingBy(
@@ -191,32 +210,28 @@ public class AttendanceService {
 
     public byte[] exportAttendanceAsCsv() {
         List<Attendance> records = attendanceRepository.findAll();
-
         StringBuilder csv = new StringBuilder();
         csv.append("ID,Employee ID,Employee Name,Department,Work Date,Check In,Check Out,Duration (min),Type,Status,Regularized,Notes\n");
-
         records.forEach(a -> {
             String empName = a.getEmployee() != null && a.getEmployee().getUser() != null
-                    ? a.getEmployee().getUser().getUsername() : "N/A";
+                    ? a.getEmployee().getUser().getName() : "N/A";
             String dept    = a.getEmployee() != null && a.getEmployee().getDepartment() != null
                     ? a.getEmployee().getDepartment().getName() : "N/A";
             Long empId     = a.getEmployee() != null ? a.getEmployee().getId() : null;
-
             csv.append(a.getId()).append(",")
                     .append(empId).append(",")
                     .append(empName).append(",")
                     .append(dept).append(",")
                     .append(a.getWorkDate()).append(",")
-                    .append(a.getCheckIn()    != null ? a.getCheckIn()    : "").append(",")
-                    .append(a.getCheckOut()   != null ? a.getCheckOut()   : "").append(",")
-                    .append(a.getDurationMin()!= null ? a.getDurationMin(): "").append(",")
+                    .append(a.getCheckIn()     != null ? a.getCheckIn()     : "").append(",")
+                    .append(a.getCheckOut()    != null ? a.getCheckOut()    : "").append(",")
+                    .append(a.getDurationMin() != null ? a.getDurationMin() : "").append(",")
                     .append(a.getAttendanceType()).append(",")
                     .append(a.getStatus()).append(",")
                     .append(a.isRegularized()).append(",")
-                    .append(a.getNotes()      != null ? a.getNotes()      : "")
+                    .append(a.getNotes()       != null ? a.getNotes()       : "")
                     .append("\n");
         });
-
         return csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 }

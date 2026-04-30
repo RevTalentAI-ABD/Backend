@@ -41,7 +41,6 @@ public class Department {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
-
     @JsonIgnoreProperties({"department", "manager", "documents", "leaveRequests",
             "leaveBalances", "attendanceRecords", "payrolls", "hibernateLazyInitializer"})
     private List<Employee> employees;

@@ -1,6 +1,8 @@
 package com.revtalent.revtalent.repository;
 
+import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.model.Payroll;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,4 +24,14 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
 
     @Query("SELECT p FROM Payroll p WHERE p.payYear = :year AND p.status = :status")
     List<Payroll> findByYearAndStatus(@Param("year") int year, @Param("status") Payroll.Status status);
+
+    @EntityGraph(attributePaths = {
+            "employee",
+            "employee.user",
+            "employee.department"
+    })
+    List<Payroll> findAll();
+
+    List<Payroll> findByEmployee_Id(Long employeeId);
+    List<Payroll> findByEmployee(Employee emp);
 }
