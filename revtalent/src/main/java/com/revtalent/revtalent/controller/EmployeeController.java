@@ -1,9 +1,13 @@
 package com.revtalent.revtalent.controller;
 
 import com.revtalent.revtalent.dto.CreateEmployeeRequest;
-import com.revtalent.revtalent.model.Employee;
+import com.revtalent.revtalent.dto.EmployeeResponse;
+import com.revtalent.revtalent.dto.PatchEmployeeRequest;
+import com.revtalent.revtalent.dto.UpdateEmployeeRequest;
 import com.revtalent.revtalent.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,43 +20,43 @@ public class EmployeeController {
     private final EmployeeService service;
 
     @GetMapping("/{id}")
-    public Employee getEmployee(@PathVariable Long id) {
-        return service.getEmployeeById(id);
+    public ResponseEntity<EmployeeResponse> getEmployee(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getEmployeeById(id));
     }
 
-    @GetMapping
-    public List<Employee> getAllEmployees() {
-        return service.getAllEmployees();
-    }
 
-    @PostMapping
-    public Employee createEmployee(@RequestBody CreateEmployeeRequest request) {
-        return service.createEmployee(request);
-    }
+
 
     @PutMapping("/{id}")
-    public Employee updateEmployee(@PathVariable Long id,
-                                   @RequestBody Employee employee) {
-        return service.updateEmployee(id, employee);
+    public ResponseEntity<EmployeeResponse> updateEmployee(
+            @PathVariable Long id,
+            @RequestBody UpdateEmployeeRequest request) {
+        return ResponseEntity.ok(service.updateEmployee(id, request));
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteEmployee(@PathVariable Long id) {
-        service.deleteEmployee(id);
+    // ── PATCH: update only personal info fields ───────────────────────────────
+    @PatchMapping("/{id}/personal-info")
+    public ResponseEntity<EmployeeResponse> patchPersonalInfo(
+            @PathVariable Long id,
+            @RequestBody PatchEmployeeRequest request) {
+        return ResponseEntity.ok(service.patchPersonalInfo(id, request));
     }
+    // ─────────────────────────────────────────────────────────────────────────
+
+
 
     @GetMapping("/{id}/dashboard-stats")
-    public Object getDashboardStats(@PathVariable Long id) {
-        return service.getDashboardStats(id);
+    public ResponseEntity<EmployeeResponse> getDashboardStats(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getEmployeeById(id));
     }
 
     @GetMapping("/{id}/schedule")
-    public Object getSchedule(@PathVariable Long id) {
-        return service.getSchedule(id);
+    public ResponseEntity<EmployeeResponse> getSchedule(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getEmployeeById(id));
     }
 
     @GetMapping("/announcements")
-    public Object getAnnouncements() {
-        return service.getAnnouncements();
+    public ResponseEntity<List<String>> getAnnouncements() {
+        return ResponseEntity.ok(service.getAnnouncements());
     }
 }
