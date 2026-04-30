@@ -116,7 +116,7 @@ public class AttendanceService {
     }
 
     public AttendanceResponseDTO regularize(Long attendanceId, AttendanceDTO dto) {
-        Attendance attendance = fetchAttendanceEntity(attendanceId); // ✅ private method
+        Attendance attendance = fetchAttendanceEntity(attendanceId);
         attendance.setCheckIn(dto.getCheckIn());
         attendance.setCheckOut(dto.getCheckOut());
         attendance.setNotes(dto.getNotes());
