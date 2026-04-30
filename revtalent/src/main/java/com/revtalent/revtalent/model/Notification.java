@@ -1,5 +1,6 @@
 package com.revtalent.revtalent.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,8 +29,10 @@ public class Notification {
 
     private LocalDateTime createdAt;
 
-    @ManyToOne
+    @ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name = "employee_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "notifications",
+            "user", "department", "manager"})
     private Employee employee;
 
     @PrePersist

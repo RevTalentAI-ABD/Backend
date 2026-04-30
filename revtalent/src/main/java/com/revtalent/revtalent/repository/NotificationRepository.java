@@ -4,6 +4,7 @@ import com.revtalent.revtalent.model.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;  // ADD this import
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -19,5 +20,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Modifying
     @Transactional
     @Query("UPDATE Notification n SET n.read = true WHERE n.employee.id = :empId")
-    void markAllAsReadByEmployeeId(Long empId);
+    void markAllAsReadByEmployeeId(@Param("empId") Long empId);  // ADD @Param here
 }

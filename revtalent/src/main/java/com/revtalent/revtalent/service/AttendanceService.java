@@ -21,17 +21,11 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final EmployeeRepository employeeRepository;
 
-    // ─────────────────────────────────────────────
-    // PRIVATE — raw entity for internal use only
-    // ─────────────────────────────────────────────
     private Attendance fetchAttendanceEntity(Long attendanceId) {
         return attendanceRepository.findById(attendanceId)
                 .orElseThrow(() -> new RuntimeException("Attendance record not found: " + attendanceId));
     }
 
-    // ─────────────────────────────────────────────
-    // PUBLIC API methods — all return DTOs
-    // ─────────────────────────────────────────────
 
     public List<AttendanceResponseDTO> getByEmployee(Long empId) {
         return attendanceRepository.findByEmployee_IdOrderByWorkDateDesc(empId)
