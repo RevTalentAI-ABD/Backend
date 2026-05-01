@@ -2,8 +2,11 @@ package com.revtalent.revtalent.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.MonthDay;
+
 
 @Entity
 @Table(name = "attendance",
@@ -15,12 +18,13 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_attendance_type", columnList = "attendance_type")
         }
 )
-
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor @Builder
+@AllArgsConstructor
+@Builder
 public class Attendance {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -53,7 +57,20 @@ public class Attendance {
     @Column(length = 255)
     private String notes;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private Status status = Status.PRESENT;
+
+    public enum Status {
+        PRESENT,
+        ABSENT,
+        WFH,
+        ON_LEAVE
+    }
+
     public enum AttendanceType {
-        WFO, WFH, FIELD
+        WFO,
+        WFH,
+        FIELD
     }
 }

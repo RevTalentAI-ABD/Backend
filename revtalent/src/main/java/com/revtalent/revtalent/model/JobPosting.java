@@ -2,6 +2,7 @@ package com.revtalent.revtalent.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,12 +18,14 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class JobPosting {
+
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="department_id",foreignKey=@ForeignKey(name = "fk_posting_dept"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id",
+            foreignKey = @ForeignKey(name = "fk_posting_dept"))
     private Department department;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,10 +33,12 @@ public class JobPosting {
             foreignKey = @ForeignKey(name = "fk_posting_creator"))
     private Employee createdBy;
 
-    @Column(nullable=false,length=150)
+    @Column(nullable = false, length = 150)
     private String title;
-    @Column(columnDefinition="TEXT")
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
     @Column(columnDefinition = "TEXT")
     private String requirements;
 
@@ -63,6 +68,8 @@ public class JobPosting {
     }
 
     public enum Status {
-        OPEN, CLOSED, ON_HOLD
+        OPEN,
+        CLOSED,
+        ON_HOLD
     }
 }
