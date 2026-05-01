@@ -8,7 +8,6 @@ import com.revtalent.revtalent.service.AttendanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -92,14 +91,5 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceService.getSummary(from, to));
     }
 
-    @GetMapping("/export")
-    public ResponseEntity<byte[]> export() {
-        byte[] csvData = attendanceService.exportAttendanceAsCsv();
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"attendance_export.csv\"")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .contentLength(csvData.length)
-                .body(csvData);
-    }
+
 }

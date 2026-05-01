@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 <?xml version="1.0" encoding="UTF-8"?>
-=======
->>>>>>> origin/HRModule
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
@@ -28,94 +25,81 @@
 
     <dependencies>
 
-<<<<<<< HEAD
         <!-- Web -->
-=======
-        <!-- 🌐 Web -->
->>>>>>> origin/HRModule
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-<<<<<<< HEAD
         <!-- JPA -->
-=======
-        <!-- 🗄️ JPA -->
->>>>>>> origin/HRModule
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-<<<<<<< HEAD
         <!-- Security -->
-=======
-        <!-- 🔐 Security -->
->>>>>>> origin/HRModule
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-<<<<<<< HEAD
         <!-- MySQL -->
-=======
-        <!-- 🛢️ MySQL -->
->>>>>>> origin/HRModule
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-<<<<<<< HEAD
         <!-- Lombok -->
-=======
-        <!-- 🧠 Lombok -->
->>>>>>> origin/HRModule
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
-<<<<<<< HEAD
-        <!-- Swagger / OpenAPI -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.8</version>  <!-- ✅ kept HEAD version — newer -->
-        </dependency>
-
-        <!-- Test -->
-=======
-        <!-- 📘 Swagger -->
+        <!-- Swagger / OpenAPI — compatible with Spring Boot 3.3.x -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.5.0</version>
         </dependency>
 
-        <!-- 🧪 Testing (includes JUnit, Mockito, MockMvc) -->
->>>>>>> origin/HRModule
+        <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-<<<<<<< HEAD
-        <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-=======
-        <!-- 🔐 Security Testing (FIXES WithMockUser issue) -->
+        <!-- Security Testing -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
->>>>>>> origin/HRModule
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- PDF -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.30</version>
+        </dependency>
+
+        <!-- DOCX -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.5</version>
         </dependency>
 
     </dependencies>
@@ -123,21 +107,13 @@
     <build>
         <plugins>
 
-<<<<<<< HEAD
             <!-- Spring Boot Plugin -->
-=======
-            <!-- 🚀 Spring Boot -->
->>>>>>> origin/HRModule
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-<<<<<<< HEAD
             <!-- Compiler Plugin (Lombok support) -->
-=======
-            <!-- ⚙️ Compiler (Lombok support) -->
->>>>>>> origin/HRModule
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
