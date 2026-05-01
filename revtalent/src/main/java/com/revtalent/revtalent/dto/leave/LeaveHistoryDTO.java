@@ -1,4 +1,4 @@
-package com.revtalent.revtalent.dto;
+package com.revtalent.revtalent.dto.leave;
 
 import com.revtalent.revtalent.model.LeaveRequest;
 import lombok.Data;

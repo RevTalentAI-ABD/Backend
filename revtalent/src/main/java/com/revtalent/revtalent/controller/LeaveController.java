@@ -1,7 +1,7 @@
 package com.revtalent.revtalent.controller;
 
-import com.revtalent.revtalent.dto.LeaveApplyDTO;
-import com.revtalent.revtalent.dto.LeaveHistoryDTO;
+import com.revtalent.revtalent.dto.leave.LeaveApplyDTO;
+import com.revtalent.revtalent.dto.leave.LeaveHistoryDTO;
 import com.revtalent.revtalent.dto.leave.LeaveRequestDTO;
 import com.revtalent.revtalent.service.LeaveService;
 import lombok.RequiredArgsConstructor;

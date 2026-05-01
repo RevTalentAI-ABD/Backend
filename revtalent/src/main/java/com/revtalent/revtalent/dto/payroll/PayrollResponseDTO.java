@@ -1,4 +1,4 @@
-package com.revtalent.revtalent.dto;
+package com.revtalent.revtalent.dto.payroll;
 
 import com.revtalent.revtalent.model.Payroll;
 import lombok.Builder;

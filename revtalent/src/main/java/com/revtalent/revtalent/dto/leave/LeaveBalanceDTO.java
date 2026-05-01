@@ -1,4 +1,4 @@
-package com.revtalent.revtalent.dto;
+package com.revtalent.revtalent.dto.leave;
 
 import lombok.*;
 

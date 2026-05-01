@@ -1,8 +1,8 @@
 package com.revtalent.revtalent.service;
 
-import com.revtalent.revtalent.dto.LeaveApplyDTO;
-import com.revtalent.revtalent.dto.LeaveBalanceDTO;
-import com.revtalent.revtalent.dto.LeaveHistoryDTO;
+import com.revtalent.revtalent.dto.leave.LeaveApplyDTO;
+import com.revtalent.revtalent.dto.leave.LeaveBalanceDTO;
+import com.revtalent.revtalent.dto.leave.LeaveHistoryDTO;
 import com.revtalent.revtalent.dto.leave.LeaveRequestDTO;
 import com.revtalent.revtalent.dto.leave.LeaveResponse;
 import com.revtalent.revtalent.model.Employee;
