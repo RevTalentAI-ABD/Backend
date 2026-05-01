@@ -2,7 +2,10 @@ package com.revtalent.revtalent.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+<<<<<<< HEAD
 
+=======
+>>>>>>> b2e1c20cb8798f7fbfeed088beb585904cae2dc5
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -16,6 +19,7 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_attendance_type", columnList = "attendance_type")
         }
 )
+<<<<<<< HEAD
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,6 +27,14 @@ import java.time.LocalDateTime;
 @Builder
 public class Attendance {
 
+=======
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor @Builder
+public class Attendance {
+>>>>>>> b2e1c20cb8798f7fbfeed088beb585904cae2dc5
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -55,6 +67,7 @@ public class Attendance {
     @Column(length = 255)
     private String notes;
 
+<<<<<<< HEAD
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status = Status.PRESENT;
@@ -70,5 +83,9 @@ public class Attendance {
         WFO,
         WFH,
         FIELD
+=======
+    public enum AttendanceType {
+        WFO, WFH, FIELD
+>>>>>>> b2e1c20cb8798f7fbfeed088beb585904cae2dc5
     }
 }
