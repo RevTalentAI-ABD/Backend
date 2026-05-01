@@ -3,7 +3,7 @@ package com.revtalent.revtalent.service;
 import com.revtalent.revtalent.model.Candidate;
 import com.revtalent.revtalent.model.mongo.Resume;
 import com.revtalent.revtalent.repository.CandidateRepository;
-import com.revtalent.revtalent.repository.ResumeRepository;
+import com.revtalent.revtalent.repositorygit .ResumeRepository;
 
 import lombok.RequiredArgsConstructor;
 
