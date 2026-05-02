@@ -3,15 +3,13 @@ package com.revtalent.revtalent.controller;
 import com.revtalent.revtalent.dto.auth.LoginRequest;
 import com.revtalent.revtalent.dto.auth.RegisterRequest;
 import com.revtalent.revtalent.service.AuthService;
-import com.revtalent.revtalent.model.User;
-
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin("*")
+
 public class AuthController {
 
     @Autowired
@@ -28,6 +26,10 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
-        return ResponseEntity.ok(authService.register(req));
+        try {
+            return ResponseEntity.ok(authService.register(req));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
     }
 }

@@ -6,6 +6,8 @@ import com.revtalent.revtalent.dto.UpdateEmployeeRequest;
 import com.revtalent.revtalent.dto.employee.EmployeeUpdateRequest;
 import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.service.EmployeeService;
+import com.revtalent.revtalent.config.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +20,11 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class EmployeeController {
 
+    private final JwtUtil jwtUtil;
+
+
     private final EmployeeService employeeService;
+
 
     // ── Employee CRUD (HRModule) ───────────────────────────────────────────────
 
@@ -82,7 +88,17 @@ public class EmployeeController {
     }
 
     // ── Manager / Team endpoints (HEAD) ───────────────────────────────────────
-
+    // Add this endpoint — reads logged-in user from JWT header
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyProfile(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Missing token");
+        }
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(token);
+        return ResponseEntity.ok(employeeService.getByUsername(username));
+    }
     @GetMapping("/manager/team")
     public ResponseEntity<List<EmployeeResponse>> getTeam() {
         return ResponseEntity.ok(employeeService.getTeam());

@@ -271,4 +271,10 @@ public class EmployeeService {
         return employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
     }
+    @Transactional(readOnly = true)
+    public EmployeeResponse getByUsername(String username) {
+        Employee emp = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", 0L));
+        return toResponse(emp);
+    }
 }

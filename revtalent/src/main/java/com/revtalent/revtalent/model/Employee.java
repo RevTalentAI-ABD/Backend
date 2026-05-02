@@ -33,11 +33,11 @@ public class Employee {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id", nullable = false,foreignKey = @ForeignKey(name = "fk_employee_user"))
+    @JoinColumn(name = "user_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_employee_user"))
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "accountNonExpired",
             "accountNonLocked", "credentialsNonExpired", "enabled",
             "authorities", "password", "passwordHash", "employee"})
-
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -50,14 +50,17 @@ public class Employee {
     @JoinColumn(name = "manager_id")
     private Employee manager;
 
-    @Column(name = "employee_code", nullable = false)
+    // ✅ Made optional during signup
+    @Column(name = "employee_code", nullable = true)
     private String employeeCode;
 
-    @Column(nullable = false)
+    // ✅ FIXED: was causing your error
+    @Column(nullable = true)
     private String designation;
 
+    // ✅ Made optional
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @Column(name = "joining_date", nullable = false)
+    @Column(name = "joining_date", nullable = true)
     private LocalDate joiningDate;
 
     @Column(name = "date_of_birth")
@@ -108,6 +111,19 @@ public class Employee {
         if (status == null) status = Status.ACTIVE;
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+
+        // ✅ Optional smart defaults (prevents future issues)
+        if (joiningDate == null) {
+            joiningDate = LocalDate.now();
+        }
+
+        if (employeeCode == null) {
+            employeeCode = "EMP" + System.currentTimeMillis();
+        }
+
+        if (designation == null) {
+            designation = "EMPLOYEE";
+        }
     }
 
     @PreUpdate
