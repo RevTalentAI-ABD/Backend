@@ -1,5 +1,6 @@
 package com.revtalent.revtalent.controller;
 
+import com.revtalent.revtalent.dto.EmployeeCreateDTO;
 import com.revtalent.revtalent.dto.EmployeeResponse;
 import com.revtalent.revtalent.dto.PatchEmployeeRequest;
 import com.revtalent.revtalent.dto.UpdateEmployeeRequest;
@@ -33,10 +34,7 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.getAll());
     }
 
-    @PostMapping("/employees")
-    public ResponseEntity<?> create(@RequestBody Employee emp) {
-        return ResponseEntity.ok(employeeService.create(emp));
-    }
+
 
     @DeleteMapping("/employees/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
@@ -107,5 +105,10 @@ public class EmployeeController {
     @GetMapping("/manager/search")
     public ResponseEntity<List<EmployeeResponse>> searchTeam(@RequestParam String query) {
         return ResponseEntity.ok(employeeService.searchTeam(query));
+    }
+
+    @PostMapping("/employees")
+    public ResponseEntity<?> create(@RequestBody EmployeeCreateDTO dto) {
+        return ResponseEntity.ok(employeeService.createEmployee(dto));
     }
 }

@@ -13,11 +13,14 @@ import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.model.User;
 import com.revtalent.revtalent.repository.DepartmentRepository;
 import com.revtalent.revtalent.repository.EmployeeRepository;
+import com.revtalent.revtalent.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.revtalent.revtalent.dto.EmployeeCreateDTO;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +31,7 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     // ── Mapper ────────────────────────────────────────────────────────────────
 
@@ -133,14 +137,53 @@ public class EmployeeService {
         return toResponse(employeeRepository.save(emp));
     }
 
-    // Lightweight create from HRModule (accepts raw Employee entity)
-    @Transactional
-    public EmployeeResponse create(Employee emp) {
-        return toResponse(employeeRepository.save(emp));
+    public Employee create(Employee emp) {
+
+        emp.setEmployeeCode("EMP" + System.currentTimeMillis());
+
+        User user = new User();
+
+        String email = emp.getEmail();
+
+        if (email == null || email.isBlank()) {
+            throw new RuntimeException("Email is required");
+        }
+
+        if (employeeRepository.findByUser_Email(email).isPresent()) {
+            throw new RuntimeException("User already exists with this email");
+        }
+
+        user.setUsername(email);
+        user.setEmail(email);
+
+        // ✅ 🔥 CRITICAL FIX
+        user.setPasswordHash(passwordEncoder.encode("default123"));
+
+        user.setRole(User.Role.EMPLOYEE);
+        user.setActive(true);
+
+        // ✅ attach user
+        emp.setUser(user);
+
+        // ✅ department mapping
+        if (emp.getDepartment() != null && emp.getDepartment().getName() != null) {
+            Department dept = departmentRepository
+                    .findByName(emp.getDepartment().getName())
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
+
+            emp.setDepartment(dept);
+        }
+
+        if (emp.getDesignation() == null || emp.getDesignation().isBlank()) {
+            emp.setDesignation("Employee");
+        }
+
+        if (emp.getJoiningDate() == null) {
+            emp.setJoiningDate(LocalDate.now());
+        }
+
+        return employeeRepository.save(emp);
     }
-
-    // ── Update ────────────────────────────────────────────────────────────────
-
     @Transactional
     public EmployeeResponse updateEmployee(Long id, UpdateEmployeeRequest request) {
         Employee emp = findOrThrow(id);
