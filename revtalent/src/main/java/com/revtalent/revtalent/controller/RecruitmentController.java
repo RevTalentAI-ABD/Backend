@@ -23,9 +23,11 @@ public class RecruitmentController {
         return ResponseEntity.ok(service.getAllJobs());
     }
 
-    @PreAuthorize("hasRole('HR_ADMIN')")
+    //@PreAuthorize("hasAnyRole('HR', 'HR_ADMIN')")
     @PostMapping("/jobs")
     public ResponseEntity<JobPostingResponse> create(@RequestBody JobRequest req) {
         return ResponseEntity.ok(service.createJob(req));
     }
+
+
 }

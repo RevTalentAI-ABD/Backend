@@ -10,6 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +45,7 @@ public class PayrollService {
         res.setPfDeduction(p.getPfDeduction());
         res.setTaxDeduction(p.getTaxDeduction());
         res.setNetPay(p.getNetPay());
+        res.setNetSalary(p.getNetPay());
         res.setStatus(p.getStatus());
         res.setProcessedAt(p.getProcessedAt());
         return res;
@@ -181,29 +187,7 @@ public class PayrollService {
 
     // ── Status Transitions ────────────────────────────────────────────────────
 
-    @Transactional
-    public List<PayrollResponse> processPayroll() {
-        List<Payroll> list = payrollRepository.findAll();
 
-        for (Payroll p : list) {
-            if (p.getStatus() != Payroll.Status.PENDING) continue;
-
-            BigDecimal net = orZero(p.getBasicSalary())
-                    .add(orZero(p.getHra()))
-                    .add(orZero(p.getAllowances()))
-                    .subtract(orZero(p.getDeductions()))
-                    .subtract(orZero(p.getPfDeduction()))
-                    .subtract(orZero(p.getTaxDeduction()));
-
-            p.setNetPay(net);
-            p.setStatus(Payroll.Status.PROCESSED);
-        }
-
-        return payrollRepository.saveAll(list)
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
 
     @Transactional
     public PayrollResponse process(Long payrollId) {
@@ -283,4 +267,81 @@ public class PayrollService {
     private BigDecimal orZero(BigDecimal v) {
         return v != null ? v : BigDecimal.ZERO;
     }
-}
+
+
+    public byte[] generateSalarySlip(Long id) {
+
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            document.add(new Paragraph("Salary Slip"));
+            document.add(new Paragraph("Employee ID: " + id));
+            document.add(new Paragraph("Salary: 70000"));
+
+            document.close();
+
+            return out.toByteArray(); // 🔥 IMPORTANT
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating PDF", e);
+        }
+    }public byte[] generateSlip(Long id) {
+
+        Payroll payroll = payrollRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Payroll not found"));
+
+        String content = "Salary Slip\n\n" +
+                "Employee: " + payroll.getEmployee().getUser().getName() + "\n" +
+                "Basic: " + payroll.getBasicSalary() + "\n" +
+                "Net Pay: " + payroll.getNetPay();
+
+        return content.getBytes(); // temporary (text file)
+    }
+
+
+    public List<Payroll> processAllPayroll() {
+
+        List<Payroll> list = payrollRepository.findAll();
+
+        for (Payroll p : list) {
+
+            BigDecimal net = p.getBasicSalary()
+                    .add(p.getHra())
+                    .add(p.getAllowances())
+                    .subtract(p.getDeductions())
+                    .subtract(p.getPfDeduction())
+                    .subtract(p.getTaxDeduction());
+
+
+            p.setNetPay(net);
+            p.setStatus(Payroll.Status.PROCESSED);
+        }
+
+        return payrollRepository.saveAll(list);
+    }
+
+    public Payroll processSingle(Long id) {
+
+        Payroll p = payrollRepository.findById(id).orElseThrow();
+
+        BigDecimal net = p.getBasicSalary()
+                .add(p.getHra())
+                .add(p.getAllowances())
+                .subtract(p.getDeductions())
+                .subtract(p.getPfDeduction())
+                .subtract(p.getTaxDeduction());
+
+        p.setNetPay(net);
+        p.setStatus(Payroll.Status.PROCESSED);
+
+        return payrollRepository.save(p);
+    }
+
+
+
+    }

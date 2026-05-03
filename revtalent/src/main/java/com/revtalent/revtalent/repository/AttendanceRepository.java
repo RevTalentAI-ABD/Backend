@@ -60,4 +60,23 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     // ✅ For summary - date range fetch
     List<Attendance> findByWorkDateBetween(LocalDate from, LocalDate to);
+
+
+
+
+        long countByStatus(String status);
+
+        long countByWorkDateBetween(LocalDate start, LocalDate end);
+
+        long countByStatusAndWorkDateBetween(String status, LocalDate start, LocalDate end);
+
+
+    long countByEmployeeAndWorkDateBetween(Employee employee, LocalDate start, LocalDate end);
+
+    long countByEmployeeAndStatusAndWorkDateBetween(
+            Employee employee,
+            Attendance.Status status,
+            LocalDate start,
+            LocalDate end
+    );
 }

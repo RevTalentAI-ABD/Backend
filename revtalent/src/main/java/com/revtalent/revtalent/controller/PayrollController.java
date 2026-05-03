@@ -5,7 +5,9 @@ import com.revtalent.revtalent.dto.payroll.PayrollResponse;
 import com.revtalent.revtalent.model.Payroll;
 import com.revtalent.revtalent.service.PayrollService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -95,8 +97,30 @@ public class PayrollController {
         return ResponseEntity.ok(payrollService.generatePayroll(month, year));
     }
 
-    @PostMapping("/process-all")
-    public ResponseEntity<List<PayrollResponse>> processAll() {
-        return ResponseEntity.ok(payrollService.processPayroll());
+
+
+    @GetMapping("/salary-slip/{id}")
+    public ResponseEntity<byte[]> downloadSalarySlip(@PathVariable Long id) {
+
+        byte[] pdfBytes = payrollService.generateSalarySlip(id);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=salary-slip.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
+
+
+    @PostMapping("/payroll/{id}/process")
+    public ResponseEntity<?> processOne(@PathVariable Long id) {
+        return ResponseEntity.ok(payrollService.processSingle(id));
+    }
+    @PostMapping("/process-all")
+    public ResponseEntity<?> processAllPayroll() {
+        List<Payroll> data = payrollService.processAllPayroll();
+        return ResponseEntity.ok(data);
+    }
+
+
+
 }
