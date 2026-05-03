@@ -15,6 +15,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Optional<Employee> findByUser_Username(String username);
 
     Optional<Employee> findByUser_Email(String email);
+    List<Employee> findByManager_Id(Long managerId);
 
     long countByStatus(Employee.Status status);
 

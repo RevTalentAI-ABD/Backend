@@ -6,6 +6,8 @@ import com.revtalent.revtalent.dto.leave.LeaveRequestDTO;
 import com.revtalent.revtalent.service.LeaveService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,13 +55,26 @@ public class LeaveController {
 
     // ── Manager / HR endpoints ────────────────────────────────────────────────
 
+
     @GetMapping
     public ResponseEntity<List<LeaveRequestDTO>> getAllLeaves() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isManager = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+        if (isManager) {
+            return ResponseEntity.ok(leaveService.getAllLeavesForManager(auth.getName()));
+        }
         return ResponseEntity.ok(leaveService.getAllLeaves());
     }
 
     @GetMapping("/pending")
     public ResponseEntity<List<LeaveRequestDTO>> getPending() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isManager = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+        if (isManager) {
+            return ResponseEntity.ok(leaveService.getPendingLeavesForManager(auth.getName()));
+        }
         return ResponseEntity.ok(leaveService.getPendingLeaves());
     }
 
@@ -68,6 +83,7 @@ public class LeaveController {
         leaveService.approveLeave(id);
         return ResponseEntity.ok("Leave approved successfully");
     }
+
 
     @PutMapping("/{id}/reject")
     public ResponseEntity<?> reject(

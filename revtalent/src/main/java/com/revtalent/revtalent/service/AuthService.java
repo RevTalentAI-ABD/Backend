@@ -31,7 +31,7 @@ public class AuthService {
     // ── Login ──────────────────────────────────────────────────────────────────
 
     public Map<String, String> login(LoginRequest req) {
-        User user = userRepo.findByUsername(req.getUsername().toLowerCase())
+        User user = userRepo.findByEmail(req.getEmail().toLowerCase())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
@@ -42,7 +42,7 @@ public class AuthService {
 
         Map<String, String> res = new HashMap<>();
         res.put("token", token);
-        res.put("role", user.getRole().name()); // "EMPLOYEE" / "MANAGER" / "HR_ADMIN"
+        res.put("role", user.getRole().name());
         res.put("name", user.getName());
         return res;
     }
@@ -52,11 +52,9 @@ public class AuthService {
     @Transactional
     public UserResponse register(RegisterRequest req) {
 
-        // Check duplicate
         userRepo.findByUsername(req.getUsername().toLowerCase())
                 .ifPresent(u -> { throw new RuntimeException("Username already exists"); });
 
-        // ── Build User ──────────────────────────────────────────────────────
         User user = new User();
         user.setName(req.getName());
         user.setUsername(req.getUsername().toLowerCase());
@@ -64,7 +62,6 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         user.setActive(true);
 
-        // Role mapping:  "hradmin" → "HR_ADMIN", "employee" → "EMPLOYEE"
         String roleStr = req.getRole()
                 .toUpperCase()
                 .trim()
@@ -72,19 +69,16 @@ public class AuthService {
                 .replace("HR ADMIN", "HR_ADMIN");
         user.setRole(User.Role.valueOf(roleStr));
 
-        // ── Build Employee (cascades User save) ─────────────────────────────
         Employee emp = new Employee();
         emp.setUser(user);
         emp.setStatus(Employee.Status.ACTIVE);
         emp.setJoiningDate(LocalDate.now());
 
-        // Link department if provided
         if (req.getDepartment() != null && !req.getDepartment().isBlank()) {
             departmentRepo.findByName(req.getDepartment())
                     .ifPresent(emp::setDepartment);
         }
 
-        // One save — saves both User + Employee
         Employee saved = employeeRepo.save(emp);
         User savedUser = saved.getUser();
 
@@ -95,5 +89,27 @@ public class AuthService {
                 .email(savedUser.getEmail())
                 .role(savedUser.getRole().name())
                 .build();
+    }
+
+    // ── Verify Email ───────────────────────────────────────────────────────────  ✅ NEW
+
+    public void verifyEmail(String email) {
+        userRepo.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new RuntimeException("No account found with this email"));
+    }
+
+    // ── Reset Password ─────────────────────────────────────────────────────────  ✅ NEW
+
+    @Transactional
+    public void resetPassword(String email, String newPassword) {
+        User user = userRepo.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new RuntimeException("No account found with this email"));
+
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new RuntimeException("Password must be at least 8 characters");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepo.save(user);
     }
 }
