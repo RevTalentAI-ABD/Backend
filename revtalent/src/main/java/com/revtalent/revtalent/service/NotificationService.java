@@ -3,7 +3,9 @@ package com.revtalent.revtalent.service;
 import com.revtalent.revtalent.dto.NotificationResponseDTO;
 import com.revtalent.revtalent.dto.notification.NotificationRequest;
 import com.revtalent.revtalent.dto.notification.NotificationResponse;
+import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.model.Notification;
+import com.revtalent.revtalent.repository.EmployeeRepository;
 import com.revtalent.revtalent.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final EmployeeRepository employeeRepository;
 
     // ── Private helper ────────────────────────────────────────────────────────
 
@@ -105,6 +108,24 @@ public class NotificationService {
         List<Notification> unread = notificationRepository.findByReadFalse();
         unread.forEach(n -> n.setRead(true));
         notificationRepository.saveAll(unread);
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> getAllNotificationsForManager(String username) {
+        Employee manager = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+        return notificationRepository.findByEmployee_Manager_Id(manager.getId()).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> getAllUnreadNotificationsForManager(String username) {
+        Employee manager = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+        return notificationRepository.findByEmployee_Manager_IdAndReadFalse(manager.getId()).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
 }

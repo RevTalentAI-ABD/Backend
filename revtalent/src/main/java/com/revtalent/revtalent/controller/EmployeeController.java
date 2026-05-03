@@ -1,9 +1,7 @@
 package com.revtalent.revtalent.controller;
 
+import com.revtalent.revtalent.dto.*;
 import com.revtalent.revtalent.dto.EmployeeCreateDTO;
-import com.revtalent.revtalent.dto.EmployeeResponse;
-import com.revtalent.revtalent.dto.PatchEmployeeRequest;
-import com.revtalent.revtalent.dto.UpdateEmployeeRequest;
 import com.revtalent.revtalent.dto.employee.EmployeeUpdateRequest;
 import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.service.EmployeeService;
@@ -97,18 +95,18 @@ public class EmployeeController {
         String username = jwtUtil.extractUsername(token);
         return ResponseEntity.ok(employeeService.getByUsername(username));
     }
-    @GetMapping("/manager/team")
-    public ResponseEntity<List<EmployeeResponse>> getTeam() {
-        return ResponseEntity.ok(employeeService.getTeam());
-    }
-
-    @GetMapping("/manager/search")
-    public ResponseEntity<List<EmployeeResponse>> searchTeam(@RequestParam String query) {
-        return ResponseEntity.ok(employeeService.searchTeam(query));
-    }
+//    @GetMapping("/manager/team")
+//    public ResponseEntity<List<EmployeeResponse>> getTeam() {
+//        return ResponseEntity.ok(employeeService.getTeam());
+//    }
+//
+//    @GetMapping("/manager/search")
+//    public ResponseEntity<List<EmployeeResponse>> searchTeam(@RequestParam String query) {
+//        return ResponseEntity.ok(employeeService.searchTeam(query));
+//    }
 
     @PostMapping("/employees")
-    public ResponseEntity<?> create(@RequestBody EmployeeCreateDTO dto) {
-        return ResponseEntity.ok(employeeService.createEmployee(dto));
+    public ResponseEntity<?> create(@RequestBody CreateEmployeeRequest request) {
+        return ResponseEntity.ok(employeeService.createEmployee(request));
     }
 }

@@ -9,7 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -76,6 +80,13 @@ public class AttendanceController {
 
     @GetMapping
     public ResponseEntity<List<AttendanceResponse>> getAll() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isManager = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+
+        if (isManager) {
+            return ResponseEntity.ok(attendanceService.getAllForManager(auth.getName()));
+        }
         return ResponseEntity.ok(attendanceService.getAll());
     }
 

@@ -6,10 +6,10 @@ import com.revtalent.revtalent.service.AuthService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-
 public class AuthController {
 
     @Autowired
@@ -28,6 +28,28 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
         try {
             return ResponseEntity.ok(authService.register(req));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> body) {
+        try {
+            authService.verifyEmail(body.get("email"));
+            return ResponseEntity.ok("Email verified");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body("No account found with this email.");
+        }
+    }
+
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        try {
+            authService.resetPassword(body.get("email"), body.get("newPassword"));
+            return ResponseEntity.ok("Password updated successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(e.getMessage());
         }

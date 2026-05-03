@@ -22,6 +22,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findByReadFalse();
 
     List<Notification> findByType(Notification.Type type);
+    List<Notification> findByEmployee_Manager_Id(Long managerId);
+    List<Notification> findByEmployee_Manager_IdAndReadFalse(Long managerId);
 
     @Modifying
     @Transactional

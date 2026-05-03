@@ -81,6 +81,11 @@ public class EmployeeService {
                 .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id)));
     }
 
+    public ManagerProfileResponse getManagerProfileByUsername(String username) {
+        Employee manager = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Manager not found: " + username));
+        return getManagerProfile(manager.getId());
+    }
     // Alias used by HRModule routes
     @Transactional(readOnly = true)
     public EmployeeResponse getById(Long id) {
@@ -89,6 +94,14 @@ public class EmployeeService {
 
     // ── Create ────────────────────────────────────────────────────────────────
 
+    public List<EmployeeResponse> getTeamForManager(String username) {
+        Employee manager = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+        return employeeRepository.findByManager_Id(manager.getId())
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
     @Transactional
     public EmployeeResponse createEmployee(CreateEmployeeRequest request) {
 

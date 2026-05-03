@@ -6,6 +6,8 @@ import com.revtalent.revtalent.dto.notification.NotificationRequest;
 import com.revtalent.revtalent.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -50,11 +52,23 @@ public class NotificationController {
 
     @GetMapping
     public ResponseEntity<List<NotificationResponse>> getAllNotifications() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isManager = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+        if (isManager) {
+            return ResponseEntity.ok(notificationService.getAllNotificationsForManager(auth.getName()));
+        }
         return ResponseEntity.ok(notificationService.getAllNotifications());
     }
 
     @GetMapping("/unread")
     public ResponseEntity<List<NotificationResponse>> getAllUnread() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isManager = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+        if (isManager) {
+            return ResponseEntity.ok(notificationService.getAllUnreadNotificationsForManager(auth.getName()));
+        }
         return ResponseEntity.ok(notificationService.getAllUnreadNotifications());
     }
 
