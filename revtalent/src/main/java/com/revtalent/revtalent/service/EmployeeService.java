@@ -314,46 +314,10 @@ public class EmployeeService {
         return employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
     }
-    public Employee createEmployee(EmployeeCreateDTO dto) {
-
-        // ✅ Fetch Department
-        Department dept = departmentRepository.findById(dto.getDepartmentId())
-                .orElseThrow(() -> new RuntimeException("Department not found"));
-
-        // ✅ Create User
-        User user = new User();
-        user.setName(dto.getFirstName() + " " + dto.getLastName());
-        user.setUsername(dto.getEmail());
-        user.setEmail(dto.getEmail());
-
-        // ✅ 🔥 ADD PASSWORD VALIDATION + ENCODING
-        if (dto.getPassword() == null || dto.getPassword().isBlank()) {
-            throw new RuntimeException("Password is required");
-        }
-
-        user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
-
-        user.setRole(User.Role.EMPLOYEE);
-        user.setActive(true);
-
-        userRepository.save(user);
-
-        // ✅ Create Employee
-        Employee emp = new Employee();
-        emp.setUser(user);
-        emp.setDepartment(dept);
-
-        emp.setDesignation(dto.getDesignation());
-        emp.setPhone(dto.getPhone());
-
-        emp.setStatus(Employee.Status.ACTIVE);
-
-        emp.setEmployeeCode("EMP" + System.currentTimeMillis());
-        emp.setJoiningDate(LocalDate.now());
-
-        emp.setAddress("N/A");
-        emp.setGender("Not Specified");
-
-        return employeeRepository.save(emp);
+    @Transactional(readOnly = true)
+    public EmployeeResponse getByUsername(String username) {
+        Employee emp = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", 0L));
+        return toResponse(emp);
     }
 }
