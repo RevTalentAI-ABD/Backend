@@ -49,6 +49,10 @@ public class Employee {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private Employee manager;
+    private String email;
+    public String getEmail() {
+        return email;
+    }
 
     @Column(name = "employee_code", nullable = false)
     private String employeeCode;
@@ -114,6 +118,13 @@ public class Employee {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    public String getName() {
+        return this.user != null ? this.user.getName() : null;
+    }
+
+
+
 
     public enum Status {
         ACTIVE,

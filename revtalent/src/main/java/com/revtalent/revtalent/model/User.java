@@ -92,6 +92,9 @@ public class User implements UserDetails {
         updatedAt = LocalDateTime.now();
     }
 
+    public String getEmail() {
+        return email;
+    }
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {

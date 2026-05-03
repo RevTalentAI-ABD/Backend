@@ -3,7 +3,6 @@ package com.revtalent.revtalent.controller;
 import com.revtalent.revtalent.service.ManagerService;
 import com.revtalent.revtalent.service.ReportService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,23 +17,33 @@ public class ReportController {
     private final ManagerService managerService;
     private final ReportService reportService;
 
+    // ✅ Productivity (Manager Service)
     @GetMapping("/productivity")
-    public ResponseEntity<List<Map<String, Object>>> productivity() {
-        return ResponseEntity.ok(managerService.getProductivity());
+    public List<Map<String, Object>> getProductivity() {
+        return managerService.getProductivity();
     }
 
+    // ✅ Attendance (Manager Service)
     @GetMapping("/attendance")
-    public ResponseEntity<Map<String, Object>> attendanceReport() {
-        return ResponseEntity.ok(managerService.getAttendanceReport());
+    public Map<String, Object> getAttendance() {
+        return managerService.getAttendanceReport();
     }
 
+    // ✅ Summary
+    @GetMapping("/summary")
+    public Map<String, Object> getSummary() {
+        return reportService.getSummary();
+    }
+
+    // ✅ Team Summary
     @GetMapping("/team-summary")
-    public ResponseEntity<Map<String, Object>> teamSummary() {
-        return ResponseEntity.ok(managerService.getTeamSummary());
+    public Map<String, Object> getTeamSummary() {
+        return reportService.getTeamSummary();
     }
 
-    @GetMapping("/hr/team-summary")
-    public ResponseEntity<?> getTeamSummary() {
-        return ResponseEntity.ok(reportService.getTeamSummary());
+    // ✅ All Reports
+    @GetMapping("/all")
+    public Map<String, Object> getAllReports() {
+        return reportService.getAllReports();
     }
 }

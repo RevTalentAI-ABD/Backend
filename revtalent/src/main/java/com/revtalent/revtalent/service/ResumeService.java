@@ -1,64 +1,32 @@
 package com.revtalent.revtalent.service;
 
-import com.revtalent.revtalent.model.Candidate;
-import com.revtalent.revtalent.model.mongo.Resume;
-import com.revtalent.revtalent.repository.CandidateRepository;
-import com.revtalent.revtalent.repositorygit .ResumeRepository;
-
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class ResumeService {
 
-    private final ResumeRepository resumeRepository;
-    private final CandidateRepository candidateRepository;
+    public Map<String, Object> analyzeResume(MultipartFile file) {
 
-    public Resume uploadResumeFile(Long candidateId, MultipartFile file) {
+        Map<String, Object> result = new HashMap<>();
 
-        try {
-            // 🔹 Fetch candidate
-            Candidate candidate = candidateRepository.findById(candidateId)
-                    .orElseThrow(() -> new RuntimeException("Candidate not found"));
+        String filename = file.getOriginalFilename();
 
-            // 🔹 Upload directory
-            String uploadDir = System.getProperty("user.dir") + "/uploads/";
+        // 🔥 Simple scoring logic (you can improve later)
+        int score = 0;
 
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs(); // create folder if not exists
-            }
+        if (filename != null && filename.toLowerCase().contains("java")) score += 30;
+        if (filename != null && filename.toLowerCase().contains("spring")) score += 30;
+        if (filename != null && filename.toLowerCase().contains("react")) score += 20;
+        if (filename != null && filename.toLowerCase().contains("ml")) score += 20;
 
-            // 🔹 Save file
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            File savedFile = new File(uploadDir + fileName);
-            file.transferTo(savedFile);
+        result.put("fileName", filename);
+        result.put("score", score);
+        result.put("status", score > 60 ? "Good Resume" : "Needs Improvement");
 
-            // 🔹 Dummy parsed text (we'll upgrade later)
-            String parsedText = ResumeParser.extractText(savedFile);
-
-            // 🔹 Save in MongoDB
-            Resume resume = Resume.builder()
-                    .candidateId(candidateId)
-                    .fileUrl(savedFile.getAbsolutePath())
-                    .parsedText(parsedText)
-                    .build();
-
-            Resume savedResume = resumeRepository.save(resume);
-
-            // 🔹 Update MySQL candidate
-            candidate.setResumeMongoId(savedResume.getId());
-            candidateRepository.save(candidate);
-
-            return savedResume;
-
-        } catch (Exception e) {
-            throw new RuntimeException("File upload failed: " + e.getMessage());
-        }
+        return result;
     }
 }
