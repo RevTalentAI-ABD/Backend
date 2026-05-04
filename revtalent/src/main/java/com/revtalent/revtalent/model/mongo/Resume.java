@@ -14,11 +14,13 @@ public class Resume {
     @Id
     private String id;
 
-    private Long candidateId;   // link with MySQL Candidate
+    private Long candidateId;   // FK to MySQL Candidate.id
 
-    private String fileUrl;
+    private String fileUrl;     // original filename
 
-    private String parsedText;
+    private byte[] fileData;    // actual file bytes stored in MongoDB
 
-    private double[] embeddings; // for AI later (optional now)
+    private String parsedText;  // extracted text content
+
+    private double[] embeddings; // for AI scoring (future)
 }

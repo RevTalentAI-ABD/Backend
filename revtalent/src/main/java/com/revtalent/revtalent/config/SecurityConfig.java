@@ -47,6 +47,9 @@ public class SecurityConfig {
                                 "/api/hr/**",
                                 "/api/recruitment/**",
                                 "/api/me",
+                                "/api/performance/**",
+                                "/api/candidates/**",
+                                "/api/resume/**",
                                 "/api/ai/**"
                         ).permitAll()
                         .anyRequest().authenticated()
