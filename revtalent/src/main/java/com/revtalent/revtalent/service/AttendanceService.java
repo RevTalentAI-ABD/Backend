@@ -178,9 +178,29 @@ public class AttendanceService {
                 .collect(Collectors.toList());
     }
 
-    // getAll() — uses same toDTO mapper, no duplicate mapToResponse needed
+    // HR — shows everything, no filter
     public List<AttendanceResponse> getAll() {
         return attendanceRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Manager — today only, deduplicated, filtered by team
+    public List<AttendanceResponse> getAllForManager(String username) {
+        LocalDate today = LocalDate.now();
+        Employee manager = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+
+        return attendanceRepository.findAll().stream()
+                .filter(a -> a.getWorkDate().equals(today))
+                .filter(a -> a.getEmployee().getManager() != null &&
+                        a.getEmployee().getManager().getId().equals(manager.getId()))
+                .collect(Collectors.toMap(
+                        a -> a.getEmployee().getId(),
+                        a -> a,
+                        (existing, replacement) -> existing
+                ))
+                .values().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -215,6 +235,8 @@ public class AttendanceService {
                 .sorted(Comparator.comparing(m -> m.get("week").toString()))
                 .collect(Collectors.toList());
     }
+
+
 
     public byte[] exportAttendanceAsCsv() {
         List<Attendance> records = attendanceRepository.findAll();

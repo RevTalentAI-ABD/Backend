@@ -1,8 +1,13 @@
 package com.revtalent.revtalent.controller;
 
+<<<<<<< HEAD
 import com.revtalent.revtalent.dto.PatchEmployeeRequest;
 import com.revtalent.revtalent.dto.UpdateEmployeeRequest;
 import com.revtalent.revtalent.dto.employee.EmployeeResponse;
+=======
+import com.revtalent.revtalent.dto.*;
+import com.revtalent.revtalent.dto.EmployeeCreateDTO;
+>>>>>>> df44851a375836bc5ba56b6a53604b165e706241
 import com.revtalent.revtalent.dto.employee.EmployeeUpdateRequest;
 import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.service.EmployeeService;
@@ -33,10 +38,7 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.getAll());
     }
 
-    @PostMapping("/employees")
-    public ResponseEntity<?> create(@RequestBody Employee emp) {
-        return ResponseEntity.ok(employeeService.create(emp));
-    }
+
 
     @DeleteMapping("/employees/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
@@ -99,13 +101,24 @@ public class EmployeeController {
         String username = jwtUtil.extractUsername(token);
         return ResponseEntity.ok(employeeService.getByUsername(username));
     }
-    @GetMapping("/manager/team")
-    public ResponseEntity<List<EmployeeResponse>> getTeam() {
-        return ResponseEntity.ok(employeeService.getTeam());
-    }
+//    @GetMapping("/manager/team")
+//    public ResponseEntity<List<EmployeeResponse>> getTeam() {
+//        return ResponseEntity.ok(employeeService.getTeam());
+//    }
+//
+//    @GetMapping("/manager/search")
+//    public ResponseEntity<List<EmployeeResponse>> searchTeam(@RequestParam String query) {
+//        return ResponseEntity.ok(employeeService.searchTeam(query));
+//    }
 
+<<<<<<< HEAD
     @GetMapping("/manager/search")
     public ResponseEntity<List<com.revtalent.revtalent.dto.employee.EmployeeResponse>> searchTeam(@RequestParam String query) {
         return ResponseEntity.ok(employeeService.searchTeam(query));
+=======
+    @PostMapping("/employees")
+    public ResponseEntity<?> create(@RequestBody CreateEmployeeRequest request) {
+        return ResponseEntity.ok(employeeService.createEmployee(request));
+>>>>>>> df44851a375836bc5ba56b6a53604b165e706241
     }
 }

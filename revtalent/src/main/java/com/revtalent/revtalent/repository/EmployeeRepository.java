@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
@@ -14,13 +15,15 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Optional<Employee> findByUser_Username(String username);
 
     Optional<Employee> findByUser_Email(String email);
+    List<Employee> findByManager_Id(Long managerId);
 
     long countByStatus(Employee.Status status);
+
     long countByManagerId(Long managerId);
+
     List<Employee> findByUser_NameContainingIgnoreCase(String name);
 
     List<Employee> findByDepartment_Name(String name);
+    long countByStatus(String status);
     List<Employee> findByStatus(Employee.Status status);
 }
-
-

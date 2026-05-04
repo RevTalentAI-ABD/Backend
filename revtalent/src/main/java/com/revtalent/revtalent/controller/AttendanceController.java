@@ -8,9 +8,12 @@ import com.revtalent.revtalent.service.AttendanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -77,6 +80,13 @@ public class AttendanceController {
 
     @GetMapping
     public ResponseEntity<List<AttendanceResponse>> getAll() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isManager = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+
+        if (isManager) {
+            return ResponseEntity.ok(attendanceService.getAllForManager(auth.getName()));
+        }
         return ResponseEntity.ok(attendanceService.getAll());
     }
 
@@ -92,14 +102,5 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceService.getSummary(from, to));
     }
 
-    @GetMapping("/export")
-    public ResponseEntity<byte[]> export() {
-        byte[] csvData = attendanceService.exportAttendanceAsCsv();
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"attendance_export.csv\"")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .contentLength(csvData.length)
-                .body(csvData);
-    }
+
 }

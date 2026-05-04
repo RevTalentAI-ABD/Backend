@@ -34,4 +34,5 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
 
     List<Payroll> findByEmployee_Id(Long employeeId);
     List<Payroll> findByEmployee(Employee emp);
+
 }

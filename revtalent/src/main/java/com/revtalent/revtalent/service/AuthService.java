@@ -37,7 +37,7 @@ public class AuthService {
     // ── Login ──────────────────────────────────────────────────────────────────
 
     public Map<String, String> login(LoginRequest req) {
-        User user = userRepo.findByUsername(req.getUsername().toLowerCase())
+        User user = userRepo.findByEmail(req.getEmail().toLowerCase())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
@@ -85,7 +85,10 @@ public class AuthService {
                     .ifPresent(emp::setDepartment);
         }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> df44851a375836bc5ba56b6a53604b165e706241
         Employee saved = employeeRepo.save(emp);
 
 
@@ -107,6 +110,7 @@ public class AuthService {
                 .build();
     }
 
+<<<<<<< HEAD
     // ── Helper ─────────────────────────────────────────────────────────────────
 
     private LeaveBalance createBalance(Employee emp, LeaveRequest.LeaveType type, int total) {
@@ -120,13 +124,20 @@ public class AuthService {
     }
 
     // ── Verify Email ───────────────────────────────────────────────────────────
+=======
+    // ── Verify Email ───────────────────────────────────────────────────────────  ✅ NEW
+>>>>>>> df44851a375836bc5ba56b6a53604b165e706241
 
     public void verifyEmail(String email) {
         userRepo.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new RuntimeException("No account found with this email"));
     }
 
+<<<<<<< HEAD
     // ── Reset Password ─────────────────────────────────────────────────────────
+=======
+    // ── Reset Password ─────────────────────────────────────────────────────────  ✅ NEW
+>>>>>>> df44851a375836bc5ba56b6a53604b165e706241
 
     @Transactional
     public void resetPassword(String email, String newPassword) {

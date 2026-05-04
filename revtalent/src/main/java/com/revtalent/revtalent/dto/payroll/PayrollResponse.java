@@ -30,5 +30,6 @@ public class PayrollResponse {
     private BigDecimal netPay;
     private Status status;
     private LocalDateTime processedAt;
+    private BigDecimal netSalary;
 }
 

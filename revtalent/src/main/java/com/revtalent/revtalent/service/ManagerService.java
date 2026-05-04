@@ -8,7 +8,10 @@ import com.revtalent.revtalent.repository.EmployeeRepository;
 import com.revtalent.revtalent.repository.LeaveRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -22,14 +25,25 @@ public class ManagerService {
     private final AttendanceRepository attendanceRepository;
     private final LeaveRequestRepository leaveRepository;
 
-    public Map<String, Object> getDashboard() {
+    public Map<String, Object> getDashboard(String username) {
+        Employee manager = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+
         LocalDate today = LocalDate.now();
-        int teamSize    = (int) employeeRepository.count();
-        int present     = attendanceRepository.countByStatusAndWorkDate(Attendance.Status.PRESENT, today);
-        int wfh         = attendanceRepository.countByStatusAndWorkDate(Attendance.Status.WFH, today);
-        int absent      = attendanceRepository.countByStatusAndWorkDate(Attendance.Status.ABSENT, today);
-        int onLeave     = attendanceRepository.countByStatusAndWorkDate(Attendance.Status.ON_LEAVE, today);
-        int pendingLeaves = leaveRepository.countByStatus(LeaveRequest.Status.APPLIED);
+        List<Long> teamIds = employeeRepository.findByManager_Id(manager.getId())
+                .stream().map(Employee::getId).collect(Collectors.toList());
+
+        int teamSize     = teamIds.size();
+        int present      = (int) attendanceRepository.findByWorkDate(today).stream()
+                .filter(a -> teamIds.contains(a.getEmployee().getId()) && a.getStatus() == Attendance.Status.PRESENT).count();
+        int wfh          = (int) attendanceRepository.findByWorkDate(today).stream()
+                .filter(a -> teamIds.contains(a.getEmployee().getId()) && a.getStatus() == Attendance.Status.WFH).count();
+        int absent       = (int) attendanceRepository.findByWorkDate(today).stream()
+                .filter(a -> teamIds.contains(a.getEmployee().getId()) && a.getStatus() == Attendance.Status.ABSENT).count();
+        int onLeave      = (int) attendanceRepository.findByWorkDate(today).stream()
+                .filter(a -> teamIds.contains(a.getEmployee().getId()) && a.getStatus() == Attendance.Status.ON_LEAVE).count();
+        int pendingLeaves = (int) leaveRepository.findByEmployee_Manager_IdAndStatus(
+                manager.getId(), LeaveRequest.Status.APPLIED).size();
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("teamSize", teamSize);
@@ -224,5 +238,57 @@ public class ManagerService {
         ));
         report.put("perEmployee", perEmployee);
         return report;
+    }
+
+    public byte[] generateReportsPdf() {
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            // Title
+            document.add(new Paragraph("Manager Report"));
+            document.add(new Paragraph("Generated on: " + LocalDate.now()));
+            document.add(new Paragraph(" "));
+
+            // 🔹 Team Summary
+            Map<String, Object> summary = getTeamSummary();
+            document.add(new Paragraph("=== Team Summary ==="));
+            for (Map.Entry<String, Object> entry : summary.entrySet()) {
+                document.add(new Paragraph(entry.getKey() + ": " + entry.getValue()));
+            }
+
+            document.add(new Paragraph(" "));
+
+            // 🔹 Dashboard Data
+            Map<String, Object> dashboard = getDashboard("system");
+            document.add(new Paragraph("=== Dashboard ==="));
+            for (Map.Entry<String, Object> entry : dashboard.entrySet()) {
+                document.add(new Paragraph(entry.getKey() + ": " + entry.getValue()));
+            }
+
+            document.add(new Paragraph(" "));
+
+            // 🔹 Attendance Report (Month)
+            Map<String, Object> attendance = getAttendanceReport();
+            document.add(new Paragraph("=== Attendance Report ==="));
+            document.add(new Paragraph("Month: " + attendance.get("reportMonth")));
+
+            Map<String, Object> monthSummary = (Map<String, Object>) attendance.get("monthSummary");
+            for (Map.Entry<String, Object> entry : monthSummary.entrySet()) {
+                document.add(new Paragraph(entry.getKey() + ": " + entry.getValue()));
+            }
+
+            document.close();
+
+            return out.toByteArray();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

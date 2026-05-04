@@ -46,11 +46,15 @@ public class SecurityConfig {
                                 "/api/payroll/**",
                                 "/api/hr/**",
                                 "/api/recruitment/**",
-                                "/api/me"
+                                "/api/me",
+                                "/api/performance/**",
+                                "/api/candidates/**",
+                                "/api/resume/**",
+                                "/api/ai/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);  // ✅ ADD
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
