@@ -44,4 +44,5 @@ public class CreateEmployeeRequest {
     private String address;
 
     private Long departmentId;
+    private String gender;
 }

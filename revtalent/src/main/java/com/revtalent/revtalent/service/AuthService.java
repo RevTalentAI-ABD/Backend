@@ -5,17 +5,22 @@ import com.revtalent.revtalent.dto.auth.LoginRequest;
 import com.revtalent.revtalent.dto.auth.RegisterRequest;
 import com.revtalent.revtalent.dto.auth.UserResponse;
 import com.revtalent.revtalent.model.Employee;
+import com.revtalent.revtalent.model.LeaveBalance;
+import com.revtalent.revtalent.model.LeaveRequest;
 import com.revtalent.revtalent.model.User;
 import com.revtalent.revtalent.repository.DepartmentRepository;
 import com.revtalent.revtalent.repository.EmployeeRepository;
+import com.revtalent.revtalent.repository.LeaveBalanceRepository;
 import com.revtalent.revtalent.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -27,6 +32,7 @@ public class AuthService {
     private final DepartmentRepository departmentRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final LeaveBalanceRepository leaveBalanceRepository;
 
     // ── Login ──────────────────────────────────────────────────────────────────
 
@@ -42,7 +48,7 @@ public class AuthService {
 
         Map<String, String> res = new HashMap<>();
         res.put("token", token);
-        res.put("role", user.getRole().name()); // "EMPLOYEE" / "MANAGER" / "HR_ADMIN"
+        res.put("role", user.getRole().name());
         res.put("name", user.getName());
         return res;
     }
@@ -52,11 +58,9 @@ public class AuthService {
     @Transactional
     public UserResponse register(RegisterRequest req) {
 
-        // Check duplicate
         userRepo.findByUsername(req.getUsername().toLowerCase())
                 .ifPresent(u -> { throw new RuntimeException("Username already exists"); });
 
-        // ── Build User ──────────────────────────────────────────────────────
         User user = new User();
         user.setName(req.getName());
         user.setUsername(req.getUsername().toLowerCase());
@@ -64,7 +68,6 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         user.setActive(true);
 
-        // Role mapping:  "hradmin" → "HR_ADMIN", "employee" → "EMPLOYEE"
         String roleStr = req.getRole()
                 .toUpperCase()
                 .trim()
@@ -72,20 +75,27 @@ public class AuthService {
                 .replace("HR ADMIN", "HR_ADMIN");
         user.setRole(User.Role.valueOf(roleStr));
 
-        // ── Build Employee (cascades User save) ─────────────────────────────
         Employee emp = new Employee();
         emp.setUser(user);
         emp.setStatus(Employee.Status.ACTIVE);
         emp.setJoiningDate(LocalDate.now());
 
-        // Link department if provided
         if (req.getDepartment() != null && !req.getDepartment().isBlank()) {
             departmentRepo.findByName(req.getDepartment())
                     .ifPresent(emp::setDepartment);
         }
 
-        // One save — saves both User + Employee
+
         Employee saved = employeeRepo.save(emp);
+
+
+        List<LeaveBalance> balances = List.of(
+                createBalance(saved, LeaveRequest.LeaveType.CASUAL, 12),
+                createBalance(saved, LeaveRequest.LeaveType.SICK,    8),
+                createBalance(saved, LeaveRequest.LeaveType.ANNUAL, 15)
+        );
+        leaveBalanceRepository.saveAll(balances);
+
         User savedUser = saved.getUser();
 
         return UserResponse.builder()
@@ -95,5 +105,38 @@ public class AuthService {
                 .email(savedUser.getEmail())
                 .role(savedUser.getRole().name())
                 .build();
+    }
+
+    // ── Helper ─────────────────────────────────────────────────────────────────
+
+    private LeaveBalance createBalance(Employee emp, LeaveRequest.LeaveType type, int total) {
+        LeaveBalance lb = new LeaveBalance();
+        lb.setEmployee(emp);
+        lb.setLeaveType(type);
+        lb.setTotalDays(BigDecimal.valueOf(total));
+        lb.setUsedDays(BigDecimal.ZERO);
+        return lb;
+    }
+
+    // ── Verify Email ───────────────────────────────────────────────────────────
+
+    public void verifyEmail(String email) {
+        userRepo.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new RuntimeException("No account found with this email"));
+    }
+
+    // ── Reset Password ─────────────────────────────────────────────────────────
+
+    @Transactional
+    public void resetPassword(String email, String newPassword) {
+        User user = userRepo.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new RuntimeException("No account found with this email"));
+
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new RuntimeException("Password must be at least 8 characters");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepo.save(user);
     }
 }
