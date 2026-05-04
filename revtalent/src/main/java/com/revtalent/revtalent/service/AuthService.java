@@ -115,6 +115,7 @@ public class AuthService {
         lb.setLeaveType(type);
         lb.setTotalDays(BigDecimal.valueOf(total));
         lb.setUsedDays(BigDecimal.ZERO);
+        lb.setYear(java.time.LocalDate.now().getYear());
         return lb;
     }
 

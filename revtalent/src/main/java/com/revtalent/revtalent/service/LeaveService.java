@@ -133,6 +133,11 @@ public class LeaveService {
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
+    public List<LeaveRequestDTO> getPendingLeaves() {
+        return leaveRepository.findByStatus(LeaveRequest.Status.APPLIED).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
 
     // From HRModule — returns LeaveResponse list
     public List<LeaveResponse> getAll() {
@@ -141,10 +146,18 @@ public class LeaveService {
                 .collect(Collectors.toList());
     }
 
-    public List<LeaveRequestDTO> getPendingLeaves() {
-        return leaveRepository.findByStatus(LeaveRequest.Status.APPLIED).stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+    public List<LeaveRequestDTO> getPendingLeavesForManager(String username) {
+        Employee manager = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+        return leaveRepository.findByEmployee_Manager_IdAndStatus(manager.getId(), LeaveRequest.Status.APPLIED)
+                .stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    public List<LeaveRequestDTO> getAllLeavesForManager(String username) {
+        Employee manager = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+        return leaveRepository.findByEmployee_Manager_Id(manager.getId())
+                .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     // ── Actions ──────────────────────────────────────────────────────────────
@@ -157,6 +170,16 @@ public class LeaveService {
         leave.setStatus(LeaveRequest.Status.APPROVED);
         leave.setActionedAt(LocalDateTime.now());
         leaveRepository.save(leave);
+
+        // ✅ Update used_days in leave_balance
+        leaveBalanceRepository.findByEmployee_IdAndLeaveTypeAndYear(
+                leave.getEmployee().getId(),
+                leave.getLeaveType(),
+                leave.getStartDate().getYear()
+        ).ifPresent(balance -> {
+            balance.setUsedDays(balance.getUsedDays().add(leave.getTotalDays()));
+            leaveBalanceRepository.save(balance);
+        });
     }
 
     // From HRModule — returns LeaveResponse after approval
@@ -164,6 +187,17 @@ public class LeaveService {
         LeaveRequest leave = fetchLeaveEntity(id);
         leave.setStatus(LeaveRequest.Status.APPROVED);
         leave.setActionedAt(LocalDateTime.now());
+
+
+        leaveBalanceRepository.findByEmployee_IdAndLeaveTypeAndYear(
+                leave.getEmployee().getId(),
+                leave.getLeaveType(),
+                leave.getStartDate().getYear()
+        ).ifPresent(balance -> {
+            balance.setUsedDays(balance.getUsedDays().add(leave.getTotalDays()));
+            leaveBalanceRepository.save(balance);
+        });
+
         return mapToDTO(leaveRepository.save(leave));
     }
 
