@@ -1,45 +1,45 @@
 package com.revtalent.revtalent.controller;
 
 import com.revtalent.revtalent.service.OllamaService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ai")
-@CrossOrigin("*")
-@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class AIController {
 
-    private final OllamaService service;
+    @Autowired
+    private OllamaService ollamaService;
 
-    // 🔹 1. HR Q&A
+    // 🧠 HR Q&A
     @PostMapping("/ask")
-    public String ask(@RequestBody Map<String, String> body) {
-        return service.askHR(body.get("question"));
+    public String askHR(@RequestBody Map<String, String> body) {
+        String question = body.get("question");
+        return ollamaService.askHR(question);
     }
 
-    // 🔹 2. Resume Screening
-    @PostMapping("/resume")
-    public String screen(@RequestBody Map<String, String> body) {
-        return service.screenResume(body.get("resume"), body.get("job"));
+    // 📄 Resume Screening
+    @PostMapping("/screen-resume")
+    public String screenResume(@RequestBody Map<String, String> body) {
+        String resume = body.get("resume");
+        String job    = body.get("job");
+        return ollamaService.screenResume(resume, job);
     }
 
-    // 🔹 3. Performance Summary
+    // 📊 Performance Summary
     @PostMapping("/performance")
     public String performance(@RequestBody Map<String, String> body) {
-        return service.performanceSummary(body.get("history"));
+        String history = body.get("history");
+        return ollamaService.performanceSummary(history);
     }
 
-    // 🔹 4. Policy Generator
-    @PostMapping("/policy")
-    public String policy(@RequestBody Map<String, String> body) {
-        return service.generatePolicy(body.get("topic"));
-    }
-    @PostMapping("/upload")
-    public String uploadResume(@RequestParam("file") MultipartFile file) throws Exception {
-        return ollamaService.extractText(file);
+    // 📝 Policy Generator
+    @PostMapping("/generate-policy")
+    public String generatePolicy(@RequestBody Map<String, String> body) {
+        String topic = body.get("topic");
+        return ollamaService.generatePolicy(topic);
     }
 }

@@ -1,0 +1,22 @@
+[33m61da628[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mOllamaIntegration[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: pull origin main: Fast-forward
+[33md7b3f63[m HEAD@{1}: pull origin main: Fast-forward
+[33m903cef2[m[33m ([m[1;31morigin/OllamaIntegration[m[33m)[m HEAD@{2}: commit: Ollama integrated
+[33mf760106[m[33m ([m[1;31morigin/CodeTesting[m[33m, [m[1;32mCodeTesting[m[33m)[m HEAD@{3}: checkout: moving from CodeTesting to OllamaIntegration
+[33mf760106[m[33m ([m[1;31morigin/CodeTesting[m[33m, [m[1;32mCodeTesting[m[33m)[m HEAD@{4}: pull origin main: Fast-forward
+[33m27daf47[m HEAD@{5}: commit: Backend Updated
+[33m303f048[m HEAD@{6}: pull origin main: Fast-forward
+[33md1be51f[m[33m ([m[1;31morigin/UpdatingBackend[m[33m, [m[1;31morigin/BackendIntegration[m[33m, [m[1;32mUpdatingBackend[m[33m, [m[1;32mBackendIntegration[m[33m)[m HEAD@{7}: checkout: moving from UpdatingBackend to CodeTesting
+[33md1be51f[m[33m ([m[1;31morigin/UpdatingBackend[m[33m, [m[1;31morigin/BackendIntegration[m[33m, [m[1;32mUpdatingBackend[m[33m, [m[1;32mBackendIntegration[m[33m)[m HEAD@{8}: checkout: moving from BackendIntegration to UpdatingBackend
+[33md1be51f[m[33m ([m[1;31morigin/UpdatingBackend[m[33m, [m[1;31morigin/BackendIntegration[m[33m, [m[1;32mUpdatingBackend[m[33m, [m[1;32mBackendIntegration[m[33m)[m HEAD@{9}: commit: Backend Integrated
+[33m9a2ca68[m[33m ([m[1;31morigin/Mongodb[m[33m, [m[1;32mMongodb[m[33m)[m HEAD@{10}: checkout: moving from Mongodb to BackendIntegration
+[33m9a2ca68[m[33m ([m[1;31morigin/Mongodb[m[33m, [m[1;32mMongodb[m[33m)[m HEAD@{11}: commit: Updated pom.xml
+[33m1723a40[m HEAD@{12}: commit: Added all Mongodb Integration
+[33mbc4d590[m[33m ([m[1;32mfeature/mongodb[m[33m)[m HEAD@{13}: checkout: moving from feature/mongodb to Mongodb
+[33mbc4d590[m[33m ([m[1;32mfeature/mongodb[m[33m)[m HEAD@{14}: commit: added chatHistory
+[33m5b012a3[m[33m ([m[1;31morigin/feature/mongodb-integration[m[33m, [m[1;32mfeature/mongodb-integrations[m[33m, [m[1;32mfeature/mongodb-integration[m[33m)[m HEAD@{15}: checkout: moving from feature/mongodb-integrations to feature/mongodb
+[33m5b012a3[m[33m ([m[1;31morigin/feature/mongodb-integration[m[33m, [m[1;32mfeature/mongodb-integrations[m[33m, [m[1;32mfeature/mongodb-integration[m[33m)[m HEAD@{16}: checkout: moving from feature/mongodb-integration to feature/mongodb-integrations
+[33m5b012a3[m[33m ([m[1;31morigin/feature/mongodb-integration[m[33m, [m[1;32mfeature/mongodb-integrations[m[33m, [m[1;32mfeature/mongodb-integration[m[33m)[m HEAD@{17}: pull origin feature/mongodb-integration: Fast-forward
+[33m28087de[m[33m ([m[1;32mmain[m[33m)[m HEAD@{18}: reset: moving to HEAD~1
+[33m5b012a3[m[33m ([m[1;31morigin/feature/mongodb-integration[m[33m, [m[1;32mfeature/mongodb-integrations[m[33m, [m[1;32mfeature/mongodb-integration[m[33m)[m HEAD@{19}: commit: Added MongoDB integration: Resume, Policy, Chat, Performance modules with file upload support
+[33m28087de[m[33m ([m[1;32mmain[m[33m)[m HEAD@{20}: checkout: moving from main to feature/mongodb-integration
+[33m28087de[m[33m ([m[1;32mmain[m[33m)[m HEAD@{21}: clone: from https://github.com/RevTalentAI-ABD/Backend.git
