@@ -2,6 +2,7 @@ package com.revtalent.revtalent.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Check;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -11,6 +12,9 @@ import java.util.List;
         indexes = {
                 @Index(name = "idx_job_status", columnList = "status")
         }
+)
+@Check(
+        constraints = "status IN ('OPEN','CLOSED','ON_HOLD')"
 )
 @Getter
 @Setter
@@ -46,8 +50,7 @@ public class JobPosting {
     private Integer vacancies = 1;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false,
-            columnDefinition = "ENUM('OPEN','CLOSED','ON_HOLD') DEFAULT 'OPEN'")
+    @Column(nullable = false)
     private Status status = Status.OPEN;
 
     @Column(name = "mongo_jd_id", length = 100)

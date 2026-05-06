@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Check;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +21,9 @@ import java.util.List;
                 @UniqueConstraint(name = "uq_user_username", columnNames = "username"),
                 @UniqueConstraint(name = "uq_user_email", columnNames = "email")
         }
+)
+@Check(
+        constraints = "role IN ('EMPLOYEE','MANAGER','HR_ADMIN')"
 )
 @Getter
 @Setter
@@ -55,8 +59,7 @@ public class User implements UserDetails {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20,
-            columnDefinition = "ENUM('EMPLOYEE','MANAGER','HR_ADMIN') DEFAULT 'EMPLOYEE'")
+    @Column(nullable = false, length = 20)
     private Role role;
 
     @Column(name = "is_active", nullable = false)

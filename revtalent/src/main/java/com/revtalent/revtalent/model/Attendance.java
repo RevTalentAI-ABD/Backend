@@ -2,21 +2,27 @@ package com.revtalent.revtalent.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Check;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.MonthDay;
-
 
 @Entity
 @Table(name = "attendance",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uq_attendance_day", columnNames = {"employee_id", "work_date"})
+                @UniqueConstraint(name = "uq_attendance_day",
+                        columnNames = {"employee_id", "work_date"})
         },
         indexes = {
-                @Index(name = "idx_attendance_date", columnList = "work_date"),
-                @Index(name = "idx_attendance_type", columnList = "attendance_type")
+                @Index(name = "idx_attendance_date",
+                        columnList = "work_date"),
+
+                @Index(name = "idx_attendance_type",
+                        columnList = "attendance_type")
         }
+)
+@Check(
+        constraints = "attendance_type IN ('WFO','WFH','FIELD')"
 )
 @Getter
 @Setter
@@ -30,8 +36,11 @@ public class Attendance {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "employee_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_attendance_emp"))
+    @JoinColumn(
+            name = "employee_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_attendance_emp")
+    )
     private Employee employee;
 
     @Column(name = "work_date", nullable = false)
@@ -47,8 +56,7 @@ public class Attendance {
     private Integer durationMin;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "attendance_type", nullable = false,
-            columnDefinition = "ENUM('WFO','WFH','FIELD') DEFAULT 'WFO'")
+    @Column(name = "attendance_type", nullable = false)
     private AttendanceType attendanceType = AttendanceType.WFO;
 
     @Column(name = "is_regularized", nullable = false)

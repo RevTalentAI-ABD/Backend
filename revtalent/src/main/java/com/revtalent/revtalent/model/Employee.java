@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import org.hibernate.annotations.Check;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +22,9 @@ import java.util.List;
                 @Index(name = "idx_employee_manager", columnList = "manager_id"),
                 @Index(name = "idx_employee_status", columnList = "status")
         }
+)
+@Check(
+        constraints = "status IN ('ACTIVE','INACTIVE','ON_LEAVE')"
 )
 @Getter
 @Setter
@@ -77,8 +82,7 @@ public class Employee {
     private String profilePictureUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false,
-            columnDefinition = "ENUM('ACTIVE','INACTIVE','ON_LEAVE') DEFAULT 'ACTIVE'")
+    @Column(nullable = false)
     private Status status = Status.ACTIVE;
 
     @Column(name = "created_at", updatable = false)

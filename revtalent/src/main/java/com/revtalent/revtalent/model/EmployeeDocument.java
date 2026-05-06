@@ -2,6 +2,7 @@ package com.revtalent.revtalent.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Check;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +11,9 @@ import java.time.LocalDateTime;
         indexes = {
                 @Index(name = "idx_document_employee", columnList = "employee_id")
         }
+)
+@Check(
+        constraints = "doc_type IN ('OFFER_LETTER','ID_PROOF','RESUME','CONTRACT','CERTIFICATE','OTHER')"
 )
 @Getter
 @Setter
@@ -28,8 +32,7 @@ public class EmployeeDocument {
     private Employee employee;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "doc_type", nullable = false,
-            columnDefinition = "ENUM('OFFER_LETTER','ID_PROOF','RESUME','CONTRACT','CERTIFICATE','OTHER')")
+    @Column(name = "doc_type", nullable = false)
     private DocType docType;
 
     @Column(name = "file_name", nullable = false, length = 255)

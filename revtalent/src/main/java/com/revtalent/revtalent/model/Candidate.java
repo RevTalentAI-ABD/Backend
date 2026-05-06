@@ -2,20 +2,30 @@ package com.revtalent.revtalent.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.hibernate.annotations.Check;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "candidate",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uq_candidate_job", columnNames = {"job_id", "email"})
+                @UniqueConstraint(
+                        name = "uq_candidate_job",
+                        columnNames = {"job_id", "email"}
+                )
         },
         indexes = {
-                @Index(name = "idx_candidate_status", columnList = "status"),
-                @Index(name = "idx_candidate_interviewer", columnList = "interviewer_id")
+                @Index(name = "idx_candidate_status",
+                        columnList = "status"),
+
+                @Index(name = "idx_candidate_interviewer",
+                        columnList = "interviewer_id")
         }
 )
+@Check(
+        constraints = "status IN ('APPLIED','SCREENING','INTERVIEW','OFFERED','HIRED','REJECTED','WITHDRAWN')"
+)
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,13 +38,18 @@ public class Candidate {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_candidate_job"))
+    @JoinColumn(
+            name = "job_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_candidate_job")
+    )
     private JobPosting jobPosting;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "interviewer_id",
-            foreignKey = @ForeignKey(name = "fk_candidate_itvwr"))
+    @JoinColumn(
+            name = "interviewer_id",
+            foreignKey = @ForeignKey(name = "fk_candidate_itvwr")
+    )
     private Employee interviewer;
 
     @Column(nullable = false, length = 100)
@@ -47,8 +62,7 @@ public class Candidate {
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false,
-            columnDefinition = "ENUM('APPLIED','SCREENING','INTERVIEW','OFFERED','HIRED','REJECTED','WITHDRAWN') DEFAULT 'APPLIED'")
+    @Column(nullable = false)
     private Status status = Status.APPLIED;
 
     @Column(name = "resume_mongo_id", length = 100)
