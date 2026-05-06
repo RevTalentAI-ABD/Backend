@@ -6,6 +6,7 @@ import com.revtalent.revtalent.service.AuthService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.revtalent.revtalent.service.OtpService;
 import java.util.Map;
 
 @RestController
@@ -14,6 +15,8 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+    @Autowired
+    private OtpService otpService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
@@ -52,6 +55,29 @@ public class AuthController {
             return ResponseEntity.ok("Password updated successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
+
+    // Add these two endpoints
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> body) {
+        try {
+            return ResponseEntity.ok(
+                    authService.verifyOtp(body.get("email"), body.get("otp"))
+            );
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<?> resendOtp(@RequestBody Map<String, String> body) {
+        try {
+            otpService.generateAndSendOtp(body.get("email"));
+            return ResponseEntity.ok("OTP resent successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body("Failed to resend OTP");
         }
     }
 }

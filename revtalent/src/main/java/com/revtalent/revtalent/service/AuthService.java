@@ -33,16 +33,48 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final LeaveBalanceRepository leaveBalanceRepository;
+    private final OtpService otpService;
 
     // ── Login ──────────────────────────────────────────────────────────────────
 
     public Map<String, String> login(LoginRequest req) {
+
+        // ✅ Try username first, then fall back to email
         User user = userRepo.findByUsername(req.getUsername().toLowerCase())
+                .or(() -> userRepo.findByEmail(req.getUsername().toLowerCase()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
             throw new RuntimeException("Invalid password");
         }
+
+        String email = user.getEmail();
+
+        try {
+            otpService.generateAndSendOtp(email);
+        } catch (Exception e) {
+            System.out.println("OTP send failed: " + e.getMessage());
+            throw new RuntimeException("Failed to send OTP to " + email);
+        }
+
+        Map<String, String> res = new HashMap<>();
+        res.put("message", "OTP sent to " + email);
+        res.put("email", email);
+        res.put("name", user.getName());
+        res.put("role", user.getRole().name());
+        return res;
+    }
+
+    // ── Verify OTP → return JWT ────────────────────────────────────────────────
+
+    public Map<String, String> verifyOtp(String email, String otp) {
+        boolean valid = otpService.verifyOtp(email, otp);
+        if (!valid) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        User user = userRepo.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
 
@@ -85,9 +117,7 @@ public class AuthService {
                     .ifPresent(emp::setDepartment);
         }
 
-
         Employee saved = employeeRepo.save(emp);
-
 
         List<LeaveBalance> balances = List.of(
                 createBalance(saved, LeaveRequest.LeaveType.CASUAL, 12),
@@ -115,7 +145,7 @@ public class AuthService {
         lb.setLeaveType(type);
         lb.setTotalDays(BigDecimal.valueOf(total));
         lb.setUsedDays(BigDecimal.ZERO);
-        lb.setYear(java.time.LocalDate.now().getYear());
+        lb.setYear(LocalDate.now().getYear());
         return lb;
     }
 
