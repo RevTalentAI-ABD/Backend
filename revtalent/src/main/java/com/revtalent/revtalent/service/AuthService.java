@@ -35,11 +35,11 @@ public class AuthService {
     private final LeaveBalanceRepository leaveBalanceRepository;
     private final OtpService otpService;
 
-    // ── Login ──────────────────────────────────────────────────────────────────
+    // ── Login → directly return JWT (no OTP) ──────────────────────────────────
 
     public Map<String, String> login(LoginRequest req) {
 
-        // ✅ Try username first, then fall back to email
+        // Try username first, then fall back to email
         User user = userRepo.findByUsername(req.getUsername().toLowerCase())
                 .or(() -> userRepo.findByEmail(req.getUsername().toLowerCase()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -48,24 +48,17 @@ public class AuthService {
             throw new RuntimeException("Invalid password");
         }
 
-        String email = user.getEmail();
-
-        try {
-            otpService.generateAndSendOtp(email);
-        } catch (Exception e) {
-            System.out.println("OTP send failed: " + e.getMessage());
-            throw new RuntimeException("Failed to send OTP to " + email);
-        }
+        // ✅ Directly generate and return JWT — no OTP needed at login
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
 
         Map<String, String> res = new HashMap<>();
-        res.put("message", "OTP sent to " + email);
-        res.put("email", email);
-        res.put("name", user.getName());
-        res.put("role", user.getRole().name());
+        res.put("token", token);
+        res.put("role",  user.getRole().name());
+        res.put("name",  user.getName());
         return res;
     }
 
-    // ── Verify OTP → return JWT ────────────────────────────────────────────────
+    // ── Verify OTP → only email verification (used after Register) ────────────
 
     public Map<String, String> verifyOtp(String email, String otp) {
         boolean valid = otpService.verifyOtp(email, otp);
@@ -73,15 +66,9 @@ public class AuthService {
             throw new RuntimeException("Invalid OTP");
         }
 
-        User user = userRepo.findByEmail(email.toLowerCase())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
-
+        // ✅ Just confirm email verified — no JWT returned here
         Map<String, String> res = new HashMap<>();
-        res.put("token", token);
-        res.put("role", user.getRole().name());
-        res.put("name", user.getName());
+        res.put("message", "Email verified successfully. Please login.");
         return res;
     }
 
@@ -149,7 +136,7 @@ public class AuthService {
         return lb;
     }
 
-    // ── Verify Email ───────────────────────────────────────────────────────────
+    // ── Verify Email (Forgot Password flow) ───────────────────────────────────
 
     public void verifyEmail(String email) {
         userRepo.findByEmail(email.toLowerCase())
