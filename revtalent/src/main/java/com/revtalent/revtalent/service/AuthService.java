@@ -35,8 +35,10 @@ public class AuthService {
     private final LeaveBalanceRepository leaveBalanceRepository;
     private final OtpService otpService;
 
-    // ── Login ─────────────────────────────────────────────────────────────────
+
     public Map<String, String> login(LoginRequest req) {
+
+        // Try username first, then fall back to email
         User user = userRepo.findByUsername(req.getUsername().toLowerCase())
                 .or(() -> userRepo.findByEmail(req.getUsername().toLowerCase()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -52,13 +54,16 @@ public class AuthService {
         res.put("role",  user.getRole().name());
         res.put("name",  user.getName());
         res.put("email", user.getEmail());
+
         return res;
     }
 
-    // ── Verify OTP ────────────────────────────────────────────────────────────
+    // ── Verify OTP → only email verification (used after Register) ────────────
     public Map<String, String> verifyOtp(String email, String otp) {
         boolean valid = otpService.verifyOtp(email, otp);
-        if (!valid) throw new RuntimeException("Invalid OTP");
+        if (!valid) {
+            throw new RuntimeException("Invalid OTP");
+        }
 
         Map<String, String> res = new HashMap<>();
         res.put("message", "Email verified successfully. Please login.");

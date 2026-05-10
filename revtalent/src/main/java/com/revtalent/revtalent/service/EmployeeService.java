@@ -1,8 +1,7 @@
 package com.revtalent.revtalent.service;
 
 import com.revtalent.revtalent.dto.CreateEmployeeRequest;
-import com.revtalent.revtalent.dto.EmployeeResponse;
-import com.revtalent.revtalent.dto.employee.EmployeeResponseManager;
+
 import com.revtalent.revtalent.dto.PatchEmployeeRequest;
 import com.revtalent.revtalent.dto.UpdateEmployeeRequest;
 import com.revtalent.revtalent.dto.employee.EmployeeUpdateRequest;
@@ -11,6 +10,7 @@ import com.revtalent.revtalent.exception.ResourceNotFoundException;
 import com.revtalent.revtalent.model.Department;
 import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.model.User;
+import com.revtalent.revtalent.dto.employee.EmployeeResponse;
 import com.revtalent.revtalent.repository.DepartmentRepository;
 import com.revtalent.revtalent.repository.EmployeeRepository;
 import com.revtalent.revtalent.repository.UserRepository;
@@ -51,6 +51,7 @@ public class EmployeeService {
                 .status(emp.getStatus() != null ? emp.getStatus().name() : null)
                 .phone(emp.getPhone())
                 .address(emp.getAddress())
+                .gender(emp.getGender())
                 .profilePictureUrl(emp.getProfilePictureUrl())
                 .joiningDate(emp.getJoiningDate())
                 .build();
@@ -229,8 +230,10 @@ public class EmployeeService {
         Employee emp = findOrThrow(id);
 
         if (req.getDesignation() != null) emp.setDesignation(req.getDesignation());
-        if (req.getPhone() != null) emp.setPhone(req.getPhone());
-        if (req.getAddress() != null) emp.setAddress(req.getAddress());
+        if (req.getPhone() != null)       emp.setPhone(req.getPhone());
+        if (req.getAddress() != null)     emp.setAddress(req.getAddress());
+        if (req.getDateOfBirth() != null) emp.setDateOfBirth(req.getDateOfBirth());
+        if (req.getGender() != null)      emp.setGender(req.getGender());
 
         return toResponse(employeeRepository.save(emp));
     }

@@ -21,21 +21,30 @@ public class LeaveHistoryDTO {
     private LocalDateTime actionedAt;
     private String approvedByName; // Only the name, nothing else
 
-    // Static factory method — clean mapping from entity
+
     public static LeaveHistoryDTO from(LeaveRequest leave) {
         LeaveHistoryDTO dto = new LeaveHistoryDTO();
         dto.setId(leave.getId());
         dto.setLeaveType(leave.getLeaveType().name());
         dto.setStartDate(leave.getStartDate());
         dto.setEndDate(leave.getEndDate());
-        dto.setTotalDays(leave.getTotalDays());
+
+        // ✅ Calculate days if totalDays is null
+        if (leave.getTotalDays() != null && leave.getTotalDays().compareTo(BigDecimal.ZERO) > 0) {
+            dto.setTotalDays(leave.getTotalDays());
+        } else if (leave.getStartDate() != null && leave.getEndDate() != null) {
+            long days = java.time.temporal.ChronoUnit.DAYS.between(leave.getStartDate(), leave.getEndDate()) + 1;
+            dto.setTotalDays(BigDecimal.valueOf(days));
+        } else {
+            dto.setTotalDays(BigDecimal.ZERO);
+        }
+
         dto.setStatus(leave.getStatus().name());
         dto.setReason(leave.getReason());
         dto.setRejectionReason(leave.getRejectionReason());
         dto.setAppliedAt(leave.getAppliedAt());
         dto.setActionedAt(leave.getActionedAt());
 
-        // Safely extract approvedBy name without loading full object
         if (leave.getApprovedBy() != null && leave.getApprovedBy().getUser() != null) {
             dto.setApprovedByName(leave.getApprovedBy().getUser().getName());
         }

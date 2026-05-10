@@ -170,6 +170,16 @@ public class LeaveService {
         leave.setStatus(LeaveRequest.Status.APPROVED);
         leave.setActionedAt(LocalDateTime.now());
         leaveRepository.save(leave);
+
+        // ✅ Update used_days in leave_balance
+        leaveBalanceRepository.findByEmployee_IdAndLeaveTypeAndYear(
+                leave.getEmployee().getId(),
+                leave.getLeaveType(),
+                leave.getStartDate().getYear()
+        ).ifPresent(balance -> {
+            balance.setUsedDays(balance.getUsedDays().add(leave.getTotalDays()));
+            leaveBalanceRepository.save(balance);
+        });
     }
 
     // From HRModule — returns LeaveResponse after approval
@@ -177,6 +187,17 @@ public class LeaveService {
         LeaveRequest leave = fetchLeaveEntity(id);
         leave.setStatus(LeaveRequest.Status.APPROVED);
         leave.setActionedAt(LocalDateTime.now());
+
+
+        leaveBalanceRepository.findByEmployee_IdAndLeaveTypeAndYear(
+                leave.getEmployee().getId(),
+                leave.getLeaveType(),
+                leave.getStartDate().getYear()
+        ).ifPresent(balance -> {
+            balance.setUsedDays(balance.getUsedDays().add(leave.getTotalDays()));
+            leaveBalanceRepository.save(balance);
+        });
+
         return mapToDTO(leaveRepository.save(leave));
     }
 

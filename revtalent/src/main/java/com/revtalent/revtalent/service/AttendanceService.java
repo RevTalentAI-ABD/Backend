@@ -114,7 +114,15 @@ public class AttendanceService {
             throw new RuntimeException("Already checked out today");
         }
 
-        attendance.setCheckOut(LocalDateTime.now());
+        LocalDateTime checkOut = LocalDateTime.now();
+        attendance.setCheckOut(checkOut);
+
+
+        if (attendance.getCheckIn() != null) {
+            long minutes = java.time.temporal.ChronoUnit.MINUTES.between(attendance.getCheckIn(), checkOut);
+            attendance.setDurationMin((int) minutes);
+        }
+
         return AttendanceResponseDTO.from(attendanceRepository.save(attendance));
     }
 

@@ -16,6 +16,7 @@ public class EmployeeResponse {
     private String status;
     private String departmentName;
     private Long departmentId;
+    private Long managerId;
 
     // User info
     private String name;
@@ -28,8 +29,9 @@ public class EmployeeResponse {
     private String address;
     private String profilePictureUrl;
     private LocalDate joiningDate;
+    private LocalDate dateOfBirth;
+    private String gender;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Long managerId;
 
 }
