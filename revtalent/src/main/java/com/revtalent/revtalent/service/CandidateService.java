@@ -33,6 +33,7 @@ public class CandidateService {
                 .name(c.getName())
                 .email(c.getEmail())
                 .phone(c.getPhone())
+                .githubUrl(c.getGithubUrl())
                 .status(c.getStatus())
                 .jobId(job != null ? job.getId() : null)
                 .jobTitle(job != null ? job.getTitle() : null)
@@ -72,6 +73,7 @@ public class CandidateService {
                 .name(req.getName())
                 .email(req.getEmail())
                 .phone(req.getPhone())
+                .githubUrl(req.getGithubUrl())
                 .status(Candidate.Status.APPLIED)
                 .build();
 

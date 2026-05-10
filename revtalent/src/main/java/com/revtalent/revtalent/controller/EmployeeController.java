@@ -114,9 +114,4 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.createEmployee(request));
     }
 
-    @GetMapping("/manager/search")
-    public ResponseEntity<List<com.revtalent.revtalent.dto.employee.EmployeeResponse>> searchTeam(@RequestParam String query) {
-        return ResponseEntity.ok(employeeService.searchTeam(query));
-
-    }
 }

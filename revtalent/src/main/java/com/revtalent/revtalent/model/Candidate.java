@@ -46,6 +46,9 @@ public class Candidate {
     @Column(length = 20)
     private String phone;
 
+    @Column(name = "github_url", length = 255)
+    private String githubUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false,
             columnDefinition = "ENUM('APPLIED','SCREENING','INTERVIEW','OFFERED','HIRED','REJECTED','WITHDRAWN') DEFAULT 'APPLIED'")

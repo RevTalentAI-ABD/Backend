@@ -18,6 +18,7 @@ public class CandidateResponse {
     private String name;
     private String email;
     private String phone;
+    private String githubUrl;
     private Status status;
     private Long jobId;
     private String jobTitle;
