@@ -1,7 +1,13 @@
 package com.revtalent.revtalent.controller;
 
+<<<<<<< HEAD
+import com.revtalent.revtalent.dto.PatchEmployeeRequest;
+import com.revtalent.revtalent.dto.UpdateEmployeeRequest;
+import com.revtalent.revtalent.dto.employee.EmployeeResponse;
+=======
 import com.revtalent.revtalent.dto.*;
 import com.revtalent.revtalent.dto.EmployeeCreateDTO;
+>>>>>>> df44851a375836bc5ba56b6a53604b165e706241
 import com.revtalent.revtalent.dto.employee.EmployeeUpdateRequest;
 import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.service.EmployeeService;
@@ -43,12 +49,12 @@ public class EmployeeController {
     // ── Employee detail endpoints (HEAD) ──────────────────────────────────────
 
     @GetMapping("/employees/{id}")
-    public ResponseEntity<EmployeeResponse> getEmployee(@PathVariable Long id) {
+    public ResponseEntity<com.revtalent.revtalent.dto.employee.EmployeeResponse> getEmployee(@PathVariable Long id) {
         return ResponseEntity.ok(employeeService.getEmployeeById(id));
     }
 
     @PutMapping("/employees/{id}")
-    public ResponseEntity<EmployeeResponse> updateEmployee(
+    public ResponseEntity<com.revtalent.revtalent.dto.employee.EmployeeResponse> updateEmployee(
             @PathVariable Long id,
             @RequestBody UpdateEmployeeRequest request) {
         return ResponseEntity.ok(employeeService.updateEmployee(id, request));
@@ -62,19 +68,19 @@ public class EmployeeController {
     }
 
     @PatchMapping("/employees/{id}/personal-info")
-    public ResponseEntity<EmployeeResponse> patchPersonalInfo(
+    public ResponseEntity<com.revtalent.revtalent.dto.employee.EmployeeResponse> patchPersonalInfo(
             @PathVariable Long id,
             @RequestBody PatchEmployeeRequest request) {
         return ResponseEntity.ok(employeeService.patchPersonalInfo(id, request));
     }
 
     @GetMapping("/employees/{id}/dashboard-stats")
-    public ResponseEntity<EmployeeResponse> getDashboardStats(@PathVariable Long id) {
+    public ResponseEntity<com.revtalent.revtalent.dto.employee.EmployeeResponse> getDashboardStats(@PathVariable Long id) {
         return ResponseEntity.ok(employeeService.getEmployeeById(id));
     }
 
     @GetMapping("/employees/{id}/schedule")
-    public ResponseEntity<EmployeeResponse> getSchedule(@PathVariable Long id) {
+    public ResponseEntity<com.revtalent.revtalent.dto.employee.EmployeeResponse> getSchedule(@PathVariable Long id) {
         return ResponseEntity.ok(employeeService.getEmployeeById(id));
     }
 
@@ -105,8 +111,14 @@ public class EmployeeController {
 //        return ResponseEntity.ok(employeeService.searchTeam(query));
 //    }
 
+<<<<<<< HEAD
+    @GetMapping("/manager/search")
+    public ResponseEntity<List<com.revtalent.revtalent.dto.employee.EmployeeResponse>> searchTeam(@RequestParam String query) {
+        return ResponseEntity.ok(employeeService.searchTeam(query));
+=======
     @PostMapping("/employees")
     public ResponseEntity<?> create(@RequestBody CreateEmployeeRequest request) {
         return ResponseEntity.ok(employeeService.createEmployee(request));
+>>>>>>> df44851a375836bc5ba56b6a53604b165e706241
     }
 }

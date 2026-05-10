@@ -6,16 +6,22 @@ import com.revtalent.revtalent.dto.auth.RegisterRequest;
 import com.revtalent.revtalent.dto.auth.UserResponse;
 import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.model.Users;
+import com.revtalent.revtalent.model.LeaveBalance;
+import com.revtalent.revtalent.model.LeaveRequest;
+import com.revtalent.revtalent.model.User;
 import com.revtalent.revtalent.repository.DepartmentRepository;
 import com.revtalent.revtalent.repository.EmployeeRepository;
+import com.revtalent.revtalent.repository.LeaveBalanceRepository;
 import com.revtalent.revtalent.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -27,6 +33,7 @@ public class AuthService {
     private final DepartmentRepository departmentRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final LeaveBalanceRepository leaveBalanceRepository;
 
     // ── Login ──────────────────────────────────────────────────────────────────
 
@@ -79,8 +86,19 @@ public class AuthService {
                     .ifPresent(emp::setDepartment);
         }
 
+
         Employee saved = employeeRepo.save(emp);
         Users savedUser = saved.getUser();
+
+
+        List<LeaveBalance> balances = List.of(
+                createBalance(saved, LeaveRequest.LeaveType.CASUAL, 12),
+                createBalance(saved, LeaveRequest.LeaveType.SICK,    8),
+                createBalance(saved, LeaveRequest.LeaveType.ANNUAL, 15)
+        );
+        leaveBalanceRepository.saveAll(balances);
+
+        User savedUser = saved.getUser();
 
         return UserResponse.builder()
                 .id(savedUser.getId())
@@ -91,14 +109,25 @@ public class AuthService {
                 .build();
     }
 
-    // ── Verify Email ───────────────────────────────────────────────────────────  ✅ NEW
+    // ── Helper ─────────────────────────────────────────────────────────────────
+
+    private LeaveBalance createBalance(Employee emp, LeaveRequest.LeaveType type, int total) {
+        LeaveBalance lb = new LeaveBalance();
+        lb.setEmployee(emp);
+        lb.setLeaveType(type);
+        lb.setTotalDays(BigDecimal.valueOf(total));
+        lb.setUsedDays(BigDecimal.ZERO);
+        lb.setYear(java.time.LocalDate.now().getYear());
+        return lb;
+    }
+
 
     public void verifyEmail(String email) {
         userRepo.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new RuntimeException("No account found with this email"));
     }
 
-    // ── Reset Password ─────────────────────────────────────────────────────────  ✅ NEW
+
 
     @Transactional
     public void resetPassword(String email, String newPassword) {

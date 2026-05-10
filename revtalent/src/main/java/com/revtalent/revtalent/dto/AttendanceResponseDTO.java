@@ -12,7 +12,7 @@ public class AttendanceResponseDTO {
     private Long id;
     private LocalDate workDate;
     private LocalDateTime checkIn;
-    //private LocalDateTime checkOut;
+    private LocalDateTime checkOut;
     private Integer durationMin;
     private String attendanceType;
     private String status;
@@ -26,6 +26,7 @@ public class AttendanceResponseDTO {
         dto.setId(a.getId());
         dto.setWorkDate(a.getWorkDate());
         dto.setCheckIn(a.getCheckIn());
+        dto.setCheckOut(a.getCheckOut());  // ✅ ADDED
         dto.setDurationMin(a.getDurationMin());
         dto.setAttendanceType(a.getAttendanceType().name());
         dto.setStatus(a.getStatus().name());
