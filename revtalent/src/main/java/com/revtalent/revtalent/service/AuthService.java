@@ -5,7 +5,7 @@ import com.revtalent.revtalent.dto.auth.LoginRequest;
 import com.revtalent.revtalent.dto.auth.RegisterRequest;
 import com.revtalent.revtalent.dto.auth.UserResponse;
 import com.revtalent.revtalent.model.Employee;
-import com.revtalent.revtalent.model.User;
+import com.revtalent.revtalent.model.Users;
 import com.revtalent.revtalent.repository.DepartmentRepository;
 import com.revtalent.revtalent.repository.EmployeeRepository;
 import com.revtalent.revtalent.repository.UserRepository;
@@ -31,7 +31,7 @@ public class AuthService {
     // ── Login ──────────────────────────────────────────────────────────────────
 
     public Map<String, String> login(LoginRequest req) {
-        User user = userRepo.findByEmail(req.getEmail().toLowerCase())
+        Users user = userRepo.findByEmail(req.getEmail().toLowerCase())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
@@ -55,7 +55,7 @@ public class AuthService {
         userRepo.findByUsername(req.getUsername().toLowerCase())
                 .ifPresent(u -> { throw new RuntimeException("Username already exists"); });
 
-        User user = new User();
+        Users user = new Users();
         user.setName(req.getName());
         user.setUsername(req.getUsername().toLowerCase());
         user.setEmail(req.getEmail().toLowerCase());
@@ -67,7 +67,7 @@ public class AuthService {
                 .trim()
                 .replace("HRADMIN", "HR_ADMIN")
                 .replace("HR ADMIN", "HR_ADMIN");
-        user.setRole(User.Role.valueOf(roleStr));
+        user.setRole(Users.Role.valueOf(roleStr));
 
         Employee emp = new Employee();
         emp.setUser(user);
@@ -80,7 +80,7 @@ public class AuthService {
         }
 
         Employee saved = employeeRepo.save(emp);
-        User savedUser = saved.getUser();
+        Users savedUser = saved.getUser();
 
         return UserResponse.builder()
                 .id(savedUser.getId())
@@ -102,7 +102,7 @@ public class AuthService {
 
     @Transactional
     public void resetPassword(String email, String newPassword) {
-        User user = userRepo.findByEmail(email.toLowerCase())
+        Users user = userRepo.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new RuntimeException("No account found with this email"));
 
         if (newPassword == null || newPassword.length() < 8) {

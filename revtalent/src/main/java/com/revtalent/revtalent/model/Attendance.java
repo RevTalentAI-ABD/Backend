@@ -2,7 +2,7 @@ package com.revtalent.revtalent.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.hibernate.annotations.Check;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.MonthDay;
@@ -17,6 +17,9 @@ import java.time.MonthDay;
                 @Index(name = "idx_attendance_date", columnList = "work_date"),
                 @Index(name = "idx_attendance_type", columnList = "attendance_type")
         }
+)
+@Check(
+        constraints = "attendance_type IN ('WFO','WFH','FIELD')"
 )
 @Getter
 @Setter
@@ -47,8 +50,7 @@ public class Attendance {
     private Integer durationMin;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "attendance_type", nullable = false,
-            columnDefinition = "ENUM('WFO','WFH','FIELD') DEFAULT 'WFO'")
+    @Column(name = "attendance_type", nullable = false)
     private AttendanceType attendanceType = AttendanceType.WFO;
 
     @Column(name = "is_regularized", nullable = false)

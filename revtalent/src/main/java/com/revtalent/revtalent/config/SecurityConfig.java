@@ -45,8 +45,11 @@ public class SecurityConfig {
                                 "/api/notifications/**",
                                 "/api/payroll/**",
                                 "/api/hr/**",
+                                "/api/managers/**",
                                 "/api/recruitment/**",
                                 "/api/me",
+                                "/api/documents/**",
+                                "/api/announcements/**",
                                 "/api/ai/**"
                         ).permitAll()
                         .anyRequest().authenticated()

@@ -93,7 +93,7 @@ package com.revtalent.revtalent.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.hibernate.annotations.Check;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -106,6 +106,9 @@ import java.time.LocalDateTime;
         indexes = {
                 @Index(name = "idx_payroll_period", columnList = "pay_year, pay_month")
         }
+)
+@Check(
+        constraints = "status IN ('PENDING','PROCESSED','PAID')"
 )
 @Getter
 @Setter
