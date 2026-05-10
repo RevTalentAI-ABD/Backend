@@ -5,6 +5,7 @@ import com.revtalent.revtalent.dto.auth.LoginRequest;
 import com.revtalent.revtalent.dto.auth.RegisterRequest;
 import com.revtalent.revtalent.dto.auth.UserResponse;
 import com.revtalent.revtalent.model.Employee;
+import com.revtalent.revtalent.model.Users;
 import com.revtalent.revtalent.model.LeaveBalance;
 import com.revtalent.revtalent.model.LeaveRequest;
 import com.revtalent.revtalent.model.User;
@@ -37,7 +38,7 @@ public class AuthService {
     // ── Login ──────────────────────────────────────────────────────────────────
 
     public Map<String, String> login(LoginRequest req) {
-        User user = userRepo.findByEmail(req.getEmail().toLowerCase())
+        Users user = userRepo.findByEmail(req.getEmail().toLowerCase())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
@@ -61,7 +62,7 @@ public class AuthService {
         userRepo.findByUsername(req.getUsername().toLowerCase())
                 .ifPresent(u -> { throw new RuntimeException("Username already exists"); });
 
-        User user = new User();
+        Users user = new Users();
         user.setName(req.getName());
         user.setUsername(req.getUsername().toLowerCase());
         user.setEmail(req.getEmail().toLowerCase());
@@ -73,7 +74,7 @@ public class AuthService {
                 .trim()
                 .replace("HRADMIN", "HR_ADMIN")
                 .replace("HR ADMIN", "HR_ADMIN");
-        user.setRole(User.Role.valueOf(roleStr));
+        user.setRole(Users.Role.valueOf(roleStr));
 
         Employee emp = new Employee();
         emp.setUser(user);
@@ -85,11 +86,9 @@ public class AuthService {
                     .ifPresent(emp::setDepartment);
         }
 
-<<<<<<< HEAD
 
-=======
->>>>>>> df44851a375836bc5ba56b6a53604b165e706241
         Employee saved = employeeRepo.save(emp);
+        Users savedUser = saved.getUser();
 
 
         List<LeaveBalance> balances = List.of(
@@ -110,7 +109,6 @@ public class AuthService {
                 .build();
     }
 
-<<<<<<< HEAD
     // ── Helper ─────────────────────────────────────────────────────────────────
 
     private LeaveBalance createBalance(Employee emp, LeaveRequest.LeaveType type, int total) {
@@ -123,25 +121,17 @@ public class AuthService {
         return lb;
     }
 
-    // ── Verify Email ───────────────────────────────────────────────────────────
-=======
-    // ── Verify Email ───────────────────────────────────────────────────────────  ✅ NEW
->>>>>>> df44851a375836bc5ba56b6a53604b165e706241
 
     public void verifyEmail(String email) {
         userRepo.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new RuntimeException("No account found with this email"));
     }
 
-<<<<<<< HEAD
-    // ── Reset Password ─────────────────────────────────────────────────────────
-=======
-    // ── Reset Password ─────────────────────────────────────────────────────────  ✅ NEW
->>>>>>> df44851a375836bc5ba56b6a53604b165e706241
+
 
     @Transactional
     public void resetPassword(String email, String newPassword) {
-        User user = userRepo.findByEmail(email.toLowerCase())
+        Users user = userRepo.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new RuntimeException("No account found with this email"));
 
         if (newPassword == null || newPassword.length() < 8) {

@@ -3,7 +3,7 @@ package com.revtalent.revtalent.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.hibernate.annotations.Check;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_leave_emp_status", columnList = "employee_id, status"),
                 @Index(name = "idx_leave_dates", columnList = "start_date, end_date")
         }
+)
+@Check(
+        constraints = "leave_type IN ('ANNUAL','SICK','CASUAL','MATERNITY','PATERNITY','UNPAID')"
 )
 @Getter
 @Setter

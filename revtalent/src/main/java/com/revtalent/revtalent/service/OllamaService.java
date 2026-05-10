@@ -14,7 +14,6 @@ public class OllamaService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    // 🔹 Core method (single place to call Ollama)
     private String callOllama(String prompt) {
         try {
             Map<String, Object> body = new HashMap<>();
@@ -25,8 +24,7 @@ public class OllamaService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<Map<String, Object>> request =
-                    new HttpEntity<>(body, headers);
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
             ResponseEntity<Map> response =
                     restTemplate.postForEntity(OLLAMA_URL, request, Map.class);
@@ -42,7 +40,6 @@ public class OllamaService {
         }
     }
 
-    // 🧠 1. HR Policy / General Q&A
     public String askHR(String question) {
         String prompt = """
                 You are a professional HR assistant.
@@ -50,16 +47,13 @@ public class OllamaService {
 
                 Question:
                 """ + question;
-
         return callOllama(prompt);
     }
 
-    // 📄 2. Resume Screening
     public String screenResume(String resume, String job) {
         String prompt = """
                 You are an HR recruiter.
-
-                Compare the following resume with job description and:
+                Compare the resume with job description and:
                 - Give match percentage
                 - Highlight strengths
                 - Highlight gaps
@@ -70,15 +64,12 @@ public class OllamaService {
 
                 Job Description:
                 """ + job;
-
         return callOllama(prompt);
     }
 
-    // 📊 3. Performance Summary
     public String performanceSummary(String history) {
         String prompt = """
                 You are an HR manager.
-
                 Analyze employee performance data and:
                 - Summarize performance
                 - Identify strengths
@@ -87,15 +78,12 @@ public class OllamaService {
 
                 Data:
                 """ + history;
-
         return callOllama(prompt);
     }
 
-    // 📝 4. Policy Generator (NEW)
     public String generatePolicy(String topic) {
         String prompt = """
                 Generate a professional HR policy for:
-
                 """ + topic + """
 
                 Include:
@@ -104,8 +92,6 @@ public class OllamaService {
                 - Rules
                 - Compliance
                 """;
-
         return callOllama(prompt);
     }
-
 }

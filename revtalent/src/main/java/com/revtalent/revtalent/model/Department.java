@@ -8,9 +8,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "department",
+@Table(
+        name = "department",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uq_department_name", columnNames = "name")
+                @UniqueConstraint(
+                        name = "uq_department_name",
+                        columnNames = "name"
+                )
         }
 )
 @Getter
@@ -28,10 +32,20 @@ public class Department {
     private String name;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "head_employee_id",
-            foreignKey = @ForeignKey(name = "fk_department_head"))
-    @JsonIgnoreProperties({"department", "manager", "documents", "leaveRequests",
-            "leaveBalances", "attendanceRecords", "payrolls", "hibernateLazyInitializer"})
+    @JoinColumn(
+            name = "head_employee_id",
+            foreignKey = @ForeignKey(name = "fk_department_head")
+    )
+    @JsonIgnoreProperties({
+            "department",
+            "manager",
+            "documents",
+            "leaveRequests",
+            "leaveBalances",
+            "attendanceRecords",
+            "payrolls",
+            "hibernateLazyInitializer"
+    })
     private Employee head;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -41,8 +55,16 @@ public class Department {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"department", "manager", "documents", "leaveRequests",
-            "leaveBalances", "attendanceRecords", "payrolls", "hibernateLazyInitializer"})
+    @JsonIgnoreProperties({
+            "department",
+            "manager",
+            "documents",
+            "leaveRequests",
+            "leaveBalances",
+            "attendanceRecords",
+            "payrolls",
+            "hibernateLazyInitializer"
+    })
     private List<Employee> employees;
 
     @PrePersist

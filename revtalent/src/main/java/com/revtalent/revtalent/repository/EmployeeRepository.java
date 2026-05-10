@@ -3,9 +3,8 @@ package com.revtalent.revtalent.repository;
 import com.revtalent.revtalent.model.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
@@ -26,4 +25,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByDepartment_Name(String name);
     long countByStatus(String status);
     List<Employee> findByStatus(Employee.Status status);
+    // EmployeeRepository.java — add this method
+
+
+    Optional<Employee> findByUser_Id(Long userId);
 }

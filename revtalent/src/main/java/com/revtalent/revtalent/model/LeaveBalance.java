@@ -2,14 +2,17 @@ package com.revtalent.revtalent.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.hibernate.annotations.Check;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "leave_balance",
+@Table(
+        name = "leave_balance",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uq_leave_balance",
-                        columnNames = {"employee_id", "leave_type", "year"})
+                @UniqueConstraint(
+                        name = "uq_leave_balance",
+                        columnNames = {"employee_id", "leave_type", "year"}
+                )
         }
 )
 @Getter
@@ -24,21 +27,25 @@ public class LeaveBalance {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "employee_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_balance_employee"))
+    @JoinColumn(
+            name = "employee_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_balance_employee")
+    )
     private Employee employee;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "leave_type", nullable = false,
-            columnDefinition = "ENUM('ANNUAL','SICK','CASUAL','MATERNITY','PATERNITY','UNPAID')")
+    @Column(name = "leave_type", nullable = false)
     private LeaveRequest.LeaveType leaveType;
 
     @Column(nullable = false)
     private Integer year;
 
-    @Column(name = "total_days", nullable = false, precision = 5, scale = 1)
+    @Builder.Default
+    @Column(name = "total_days", nullable = false)
     private BigDecimal totalDays = BigDecimal.ZERO;
 
-    @Column(name = "used_days", nullable = false, precision = 5, scale = 1)
+    @Builder.Default
+    @Column(name = "used_days", nullable = false)
     private BigDecimal usedDays = BigDecimal.ZERO;
 }

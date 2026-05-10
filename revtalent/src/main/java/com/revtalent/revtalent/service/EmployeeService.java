@@ -9,6 +9,7 @@ import com.revtalent.revtalent.dto.employee.ManagerProfileResponse;
 import com.revtalent.revtalent.exception.ResourceNotFoundException;
 import com.revtalent.revtalent.model.Department;
 import com.revtalent.revtalent.model.Employee;
+import com.revtalent.revtalent.model.Users;
 import com.revtalent.revtalent.model.User;
 import com.revtalent.revtalent.dto.employee.EmployeeResponse;
 import com.revtalent.revtalent.repository.DepartmentRepository;
@@ -123,15 +124,15 @@ public class EmployeeService {
             throw new IllegalArgumentException("Email already exists: " + request.getEmail());
         });
 
-        User user = new User();
+        Users user = new Users();
         user.setName(request.getName());
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         if (request.getRole() != null && !request.getRole().isBlank()) {
-            user.setRole(User.Role.valueOf(request.getRole().toUpperCase()));
+            user.setRole(Users.Role.valueOf(request.getRole().toUpperCase()));
         } else {
-            user.setRole(User.Role.EMPLOYEE);
+            user.setRole(Users.Role.EMPLOYEE);
         }
 
         Employee emp = new Employee();
@@ -155,7 +156,7 @@ public class EmployeeService {
 
         emp.setEmployeeCode("EMP" + System.currentTimeMillis());
 
-        User user = new User();
+        Users user = new Users();
 
         String email = emp.getEmail();
 
@@ -170,10 +171,10 @@ public class EmployeeService {
         user.setUsername(email);
         user.setEmail(email);
 
-        // ✅ 🔥 CRITICAL FIX
+
         user.setPasswordHash(passwordEncoder.encode("default123"));
 
-        user.setRole(User.Role.EMPLOYEE);
+        user.setRole(Users.Role.EMPLOYEE);
         user.setActive(true);
 
         // ✅ attach user

@@ -2,7 +2,7 @@ package com.revtalent.revtalent.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.hibernate.annotations.Check;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_candidate_status", columnList = "status"),
                 @Index(name = "idx_candidate_interviewer", columnList = "interviewer_id")
         }
+)
+@Check(
+        constraints = "status IN ('APPLIED','SCREENING','INTERVIEW','OFFERED','HIRED','REJECTED','WITHDRAWN')"
 )
 @Getter
 @Setter
@@ -47,8 +50,7 @@ public class Candidate {
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false,
-            columnDefinition = "ENUM('APPLIED','SCREENING','INTERVIEW','OFFERED','HIRED','REJECTED','WITHDRAWN') DEFAULT 'APPLIED'")
+    @Column(nullable = false)
     private Status status = Status.APPLIED;
 
     @Column(name = "resume_mongo_id", length = 100)

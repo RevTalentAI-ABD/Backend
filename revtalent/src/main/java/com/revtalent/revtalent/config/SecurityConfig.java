@@ -20,17 +20,17 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor  // ✅ ADD
+@RequiredArgsConstructor  
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;  // ✅ ADD
+    private final JwtFilter jwtFilter;  
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // ✅ ADD
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/swagger-ui/**",
@@ -45,8 +45,11 @@ public class SecurityConfig {
                                 "/api/notifications/**",
                                 "/api/payroll/**",
                                 "/api/hr/**",
+                                "/api/managers/**",
                                 "/api/recruitment/**",
                                 "/api/me",
+                                "/api/documents/**",
+                                "/api/announcements/**",
                                 "/api/performance/**",
                                 "/api/candidates/**",
                                 "/api/resume/**",
