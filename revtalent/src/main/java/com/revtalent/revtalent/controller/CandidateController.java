@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,37 @@ public class CandidateController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(candidateService.updateStatus(id, status));
+    }
+
+    // ── Schedule interview ─────────────────────────────────────────────────────
+    // Body: { "interviewDate": "2026-05-20T10:30:00", "interviewerId": 3 }
+    // Moves candidate to INTERVIEW + saves date + assigns interviewer
+    @PutMapping("/{id}/schedule")
+    public ResponseEntity<CandidateResponse> scheduleInterview(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+
+        String dateStr = (String) body.get("interviewDate");
+        if (dateStr == null || dateStr.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        LocalDateTime interviewDate;
+        try {
+            interviewDate = LocalDateTime.parse(dateStr);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Long interviewerId = null;
+        Object rawId = body.get("interviewerId");
+        if (rawId instanceof Number) {
+            interviewerId = ((Number) rawId).longValue();
+        } else if (rawId instanceof String && !((String) rawId).isBlank()) {
+            try { interviewerId = Long.parseLong((String) rawId); } catch (NumberFormatException ignored) {}
+        }
+
+        return ResponseEntity.ok(candidateService.scheduleInterview(id, interviewDate, interviewerId));
     }
 
     // ── Delete candidate ──────────────────────────────────────────────────────

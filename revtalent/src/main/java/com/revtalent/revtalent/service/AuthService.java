@@ -5,17 +5,22 @@ import com.revtalent.revtalent.dto.auth.LoginRequest;
 import com.revtalent.revtalent.dto.auth.RegisterRequest;
 import com.revtalent.revtalent.dto.auth.UserResponse;
 import com.revtalent.revtalent.model.Employee;
+import com.revtalent.revtalent.model.LeaveBalance;
+import com.revtalent.revtalent.model.LeaveRequest;
 import com.revtalent.revtalent.model.User;
 import com.revtalent.revtalent.repository.DepartmentRepository;
 import com.revtalent.revtalent.repository.EmployeeRepository;
+import com.revtalent.revtalent.repository.LeaveBalanceRepository;
 import com.revtalent.revtalent.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -27,11 +32,13 @@ public class AuthService {
     private final DepartmentRepository departmentRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final LeaveBalanceRepository leaveBalanceRepository;
+    private final OtpService otpService;
 
-    // ── Login ──────────────────────────────────────────────────────────────────
-
+    // ── Login ─────────────────────────────────────────────────────────────────
     public Map<String, String> login(LoginRequest req) {
-        User user = userRepo.findByEmail(req.getEmail().toLowerCase())
+        User user = userRepo.findByUsername(req.getUsername().toLowerCase())
+                .or(() -> userRepo.findByEmail(req.getUsername().toLowerCase()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
@@ -42,33 +49,59 @@ public class AuthService {
 
         Map<String, String> res = new HashMap<>();
         res.put("token", token);
-        res.put("role", user.getRole().name());
-        res.put("name", user.getName());
+        res.put("role",  user.getRole().name());
+        res.put("name",  user.getName());
+        res.put("email", user.getEmail());
         return res;
     }
 
-    // ── Register ───────────────────────────────────────────────────────────────
+    // ── Verify OTP ────────────────────────────────────────────────────────────
+    public Map<String, String> verifyOtp(String email, String otp) {
+        boolean valid = otpService.verifyOtp(email, otp);
+        if (!valid) throw new RuntimeException("Invalid OTP");
 
+        Map<String, String> res = new HashMap<>();
+        res.put("message", "Email verified successfully. Please login.");
+        return res;
+    }
+
+    // ── Register ──────────────────────────────────────────────────────────────
     @Transactional
     public UserResponse register(RegisterRequest req) {
 
         userRepo.findByUsername(req.getUsername().toLowerCase())
                 .ifPresent(u -> { throw new RuntimeException("Username already exists"); });
 
-        User user = new User();
-        user.setName(req.getName());
-        user.setUsername(req.getUsername().toLowerCase());
-        user.setEmail(req.getEmail().toLowerCase());
-        user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
-        user.setActive(true);
-
+        // Parse role
         String roleStr = req.getRole()
                 .toUpperCase()
                 .trim()
                 .replace("HRADMIN", "HR_ADMIN")
                 .replace("HR ADMIN", "HR_ADMIN");
-        user.setRole(User.Role.valueOf(roleStr));
+        User.Role role = User.Role.valueOf(roleStr);
 
+        // Build and save User
+        User user = new User();
+        user.setName(req.getName());
+        user.setUsername(req.getUsername().toLowerCase());
+        user.setEmail(req.getEmail().toLowerCase());
+        user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+        user.setRole(role);
+        user.setActive(true);
+
+        // ── Candidates: save User only, no Employee record needed ─────────────
+        if (role == User.Role.CANDIDATE) {
+            User savedUser = userRepo.save(user);
+            return UserResponse.builder()
+                    .id(savedUser.getId())
+                    .name(savedUser.getName())
+                    .username(savedUser.getUsername())
+                    .email(savedUser.getEmail())
+                    .role(savedUser.getRole().name())
+                    .build();
+        }
+
+        // ── Employees / Managers / HR: create Employee record + leave balances ─
         Employee emp = new Employee();
         emp.setUser(user);
         emp.setStatus(Employee.Status.ACTIVE);
@@ -80,8 +113,15 @@ public class AuthService {
         }
 
         Employee saved = employeeRepo.save(emp);
-        User savedUser = saved.getUser();
 
+        List<LeaveBalance> balances = List.of(
+                createBalance(saved, LeaveRequest.LeaveType.CASUAL, 12),
+                createBalance(saved, LeaveRequest.LeaveType.SICK,    8),
+                createBalance(saved, LeaveRequest.LeaveType.ANNUAL,  15)
+        );
+        leaveBalanceRepository.saveAll(balances);
+
+        User savedUser = saved.getUser();
         return UserResponse.builder()
                 .id(savedUser.getId())
                 .name(savedUser.getName())
@@ -91,15 +131,24 @@ public class AuthService {
                 .build();
     }
 
-    // ── Verify Email ───────────────────────────────────────────────────────────  ✅ NEW
+    // ── Helper ────────────────────────────────────────────────────────────────
+    private LeaveBalance createBalance(Employee emp, LeaveRequest.LeaveType type, int total) {
+        LeaveBalance lb = new LeaveBalance();
+        lb.setEmployee(emp);
+        lb.setLeaveType(type);
+        lb.setTotalDays(BigDecimal.valueOf(total));
+        lb.setUsedDays(BigDecimal.ZERO);
+        lb.setYear(LocalDate.now().getYear());
+        return lb;
+    }
 
+    // ── Verify Email (Forgot Password flow) ───────────────────────────────────
     public void verifyEmail(String email) {
         userRepo.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new RuntimeException("No account found with this email"));
     }
 
-    // ── Reset Password ─────────────────────────────────────────────────────────  ✅ NEW
-
+    // ── Reset Password ────────────────────────────────────────────────────────
     @Transactional
     public void resetPassword(String email, String newPassword) {
         User user = userRepo.findByEmail(email.toLowerCase())

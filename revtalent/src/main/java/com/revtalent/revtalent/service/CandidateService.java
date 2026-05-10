@@ -3,15 +3,17 @@ package com.revtalent.revtalent.service;
 import com.revtalent.revtalent.dto.recruitment.CandidateRequest;
 import com.revtalent.revtalent.dto.recruitment.CandidateResponse;
 import com.revtalent.revtalent.model.Candidate;
+import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.model.JobPosting;
 import com.revtalent.revtalent.repository.CandidateRepository;
+import com.revtalent.revtalent.repository.EmployeeRepository;
 import com.revtalent.revtalent.repository.JobPostingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,22 +22,33 @@ public class CandidateService {
 
     private final CandidateRepository candidateRepository;
     private final JobPostingRepository jobPostingRepository;
+    private final EmployeeRepository employeeRepository;
 
     // ── Mapper ────────────────────────────────────────────────────────────────
     private CandidateResponse toResponse(Candidate c) {
+        JobPosting job = c.getJobPosting();
+        Employee interviewer = c.getInterviewer();
         return CandidateResponse.builder()
                 .id(c.getId())
                 .name(c.getName())
                 .email(c.getEmail())
                 .phone(c.getPhone())
                 .status(c.getStatus())
-                .jobId(c.getJobPosting() != null ? c.getJobPosting().getId() : null)
-                .jobTitle(c.getJobPosting() != null ? c.getJobPosting().getTitle() : null)
+                .jobId(job != null ? job.getId() : null)
+                .jobTitle(job != null ? job.getTitle() : null)
+                .departmentName(
+                        job != null && job.getDepartment() != null
+                                ? job.getDepartment().getName()
+                                : null
+                )
                 .resumeMongoId(c.getResumeMongoId())
                 .interviewDate(c.getInterviewDate())
                 .offerDate(c.getOfferDate())
                 .appliedAt(c.getAppliedAt())
                 .updatedAt(c.getUpdatedAt())
+                // interviewer fields — safe nulls
+                .interviewerId(interviewer != null ? interviewer.getId() : null)
+                .interviewerName(interviewer != null ? interviewer.getName() : null)
                 .build();
     }
 
@@ -45,7 +58,6 @@ public class CandidateService {
         JobPosting job = jobPostingRepository.findById(req.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found: " + req.getJobId()));
 
-        // Prevent duplicate application to same job
         boolean exists = candidateRepository
                 .findByEmail(req.getEmail())
                 .stream()
@@ -70,31 +82,43 @@ public class CandidateService {
     @Transactional(readOnly = true)
     public List<CandidateResponse> getCandidatesByJob(Long jobId) {
         return candidateRepository.findByJobPosting_Id(jobId)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     // ── Get all candidates ────────────────────────────────────────────────────
     @Transactional(readOnly = true)
     public List<CandidateResponse> getAllCandidates() {
         return candidateRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    // ── Move candidate through pipeline ───────────────────────────────────────
+    // ── Move candidate through pipeline (status only) ─────────────────────────
     @Transactional
     public CandidateResponse updateStatus(Long id, String status) {
         Candidate candidate = candidateRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Candidate not found: " + id));
-
         try {
             candidate.setStatus(Candidate.Status.valueOf(status.toUpperCase()));
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status: " + status +
-                    ". Valid values: APPLIED, SCREENING, INTERVIEW, OFFERED, HIRED, REJECTED, WITHDRAWN");
+                    ". Valid: APPLIED, SCREENING, INTERVIEW, OFFERED, HIRED, REJECTED, WITHDRAWN");
+        }
+        return toResponse(candidateRepository.save(candidate));
+    }
+
+    // ── Schedule interview — sets interviewDate + interviewer + moves to INTERVIEW
+    @Transactional
+    public CandidateResponse scheduleInterview(Long id, LocalDateTime interviewDate, Long interviewerId) {
+        Candidate candidate = candidateRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Candidate not found: " + id));
+
+        candidate.setStatus(Candidate.Status.INTERVIEW);
+        candidate.setInterviewDate(interviewDate);
+
+        if (interviewerId != null) {
+            Employee interviewer = employeeRepository.findById(interviewerId)
+                    .orElseThrow(() -> new RuntimeException("Employee not found: " + interviewerId));
+            candidate.setInterviewer(interviewer);
         }
 
         return toResponse(candidateRepository.save(candidate));
@@ -107,5 +131,12 @@ public class CandidateService {
             throw new RuntimeException("Candidate not found: " + id);
         }
         candidateRepository.deleteById(id);
+    }
+
+    // ── Get by email ──────────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public List<CandidateResponse> getByEmail(String email) {
+        return candidateRepository.findByEmail(email)
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 }

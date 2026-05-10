@@ -56,7 +56,7 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20,
-            columnDefinition = "ENUM('EMPLOYEE','MANAGER','HR_ADMIN') DEFAULT 'EMPLOYEE'")
+            columnDefinition = "ENUM('EMPLOYEE','MANAGER','HR_ADMIN','CANDIDATE') DEFAULT 'EMPLOYEE'")
     private Role role;
 
     @Column(name = "is_active", nullable = false)
@@ -112,6 +112,7 @@ public class User implements UserDetails {
     public enum Role {
         EMPLOYEE,
         MANAGER,
-        HR_ADMIN
+        HR_ADMIN,
+        CANDIDATE
     }
 }

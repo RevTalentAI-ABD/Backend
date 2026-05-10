@@ -21,9 +21,12 @@ public class CandidateResponse {
     private Status status;
     private Long jobId;
     private String jobTitle;
+    private String departmentName;   // ← added
     private String resumeMongoId;
     private LocalDateTime interviewDate;
     private LocalDate offerDate;
     private LocalDateTime appliedAt;
     private LocalDateTime updatedAt;
+    private Long   interviewerId;
+    private String interviewerName;
 }
