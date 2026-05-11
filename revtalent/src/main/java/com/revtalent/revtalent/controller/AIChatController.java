@@ -31,6 +31,12 @@ public class AIChatController {
     @Autowired
     private AIDocumentRepository repository;
 
+    // ✅ PING — test if endpoint is reachable
+    @GetMapping("/ping")
+    public String ping() {
+        return "ok";
+    }
+
     @PostMapping("/ask")
     public Map<String, String> askAI(
             @RequestBody AIRequest request

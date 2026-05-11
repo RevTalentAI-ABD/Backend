@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.revtalent.revtalent.dto.EmployeeCreateDTO;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -263,12 +264,37 @@ public class EmployeeService {
     // From HRModule — soft delete (sets status to INACTIVE)
     @Transactional
     public boolean delete(Long id) {
-        Employee emp = findOrThrow(id);
-        emp.setStatus(Employee.Status.INACTIVE);
+        Employee emp =
+                findOrThrow(id);
+        emp.setDeleted(true);
+        emp.setDeletedAt(
+                LocalDateTime.now()
+        );
+        emp.setStatus(
+                Employee.Status.INACTIVE
+        );
         employeeRepository.save(emp);
         return true;
     }
 
+    @Transactional
+    public boolean restore(Long id) {
+
+        Employee emp =
+                findOrThrow(id);
+
+        emp.setDeleted(false);
+
+        emp.setDeletedAt(null);
+
+        emp.setStatus(
+                Employee.Status.ACTIVE
+        );
+
+        employeeRepository.save(emp);
+
+        return true;
+    }
     // ── Search & Team ─────────────────────────────────────────────────────────
 
     public List<EmployeeResponse> getTeam() {

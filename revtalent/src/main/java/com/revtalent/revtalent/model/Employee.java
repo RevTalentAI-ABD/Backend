@@ -128,6 +128,11 @@ public class Employee {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "is_deleted")
+    private Boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
     @JsonIgnore
     @OneToMany(mappedBy = "manager", fetch = FetchType.LAZY)
     private List<Employee> reportees;
@@ -205,4 +210,6 @@ public class Employee {
         INACTIVE,
         ON_LEAVE
     }
+
+
 }

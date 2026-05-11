@@ -1,32 +1,25 @@
 package com.revtalent.revtalent.controller;
 
 import com.revtalent.revtalent.model.AIDocument;
-
 import com.revtalent.revtalent.repository.AIDocumentRepository;
-
 import com.revtalent.revtalent.service.ChromaService;
 import com.revtalent.revtalent.service.OllamaEmbeddingService;
 import com.revtalent.revtalent.service.TextChunkService;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import java.nio.file.Files;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -48,158 +41,85 @@ public class AIDocumentController {
     private ChromaService chromaService;
 
     private final String UPLOAD_DIR =
-            System.getProperty("user.dir")
-                    + "/src/main/resources/uploads/";
+            System.getProperty("user.dir") + "/src/main/resources/uploads/";
 
-    @PostMapping(
-            value = "/upload",
-            consumes = "multipart/form-data"
-    )
-    public ResponseEntity<?> uploadDocument(
-            @RequestParam("file")
-            MultipartFile file
-    ) throws IOException {
+    // ── Upload ────────────────────────────────────────────────────────────────
+    @PostMapping(value = "/upload", consumes = "multipart/form-data")
+    public ResponseEntity<?> uploadDocument(@RequestParam("file") MultipartFile file) throws IOException {
 
         File dir = new File(UPLOAD_DIR);
+        if (!dir.exists()) dir.mkdirs();
 
-        if (!dir.exists()) {
-
-            dir.mkdirs();
-        }
-
-        String filePath =
-                UPLOAD_DIR +
-                        file.getOriginalFilename();
-
-        File savedFile =
-                new File(filePath);
-
+        String filePath = UPLOAD_DIR + file.getOriginalFilename();
+        File savedFile  = new File(filePath);
         file.transferTo(savedFile);
 
-        // SAVE DB
-
-        AIDocument doc =
-                new AIDocument();
-
-        doc.setFileName(
-                file.getOriginalFilename()
-        );
-
-        doc.setFileType(
-                file.getContentType()
-        );
-
+        // Save to DB
+        AIDocument doc = new AIDocument();
+        doc.setFileName(file.getOriginalFilename());
+        doc.setFileType(file.getContentType());
         doc.setFilePath(filePath);
-
         repository.save(doc);
 
-        // EXTRACT TEXT
-
+        // Extract text
         String extractedText = "";
 
-        // PDF
-
-        if (file.getOriginalFilename()
-                .endsWith(".pdf")) {
-
-            PDDocument pdf =
-                    PDDocument.load(savedFile);
-
-            PDFTextStripper stripper =
-                    new PDFTextStripper();
-
-            extractedText =
-                    stripper.getText(pdf);
-
+        if (file.getOriginalFilename().endsWith(".pdf")) {
+            PDDocument pdf = PDDocument.load(savedFile);
+            PDFTextStripper stripper = new PDFTextStripper();
+            extractedText = stripper.getText(pdf);
             pdf.close();
-        }
 
-        // DOCX
-
-        else if (file.getOriginalFilename()
-                .endsWith(".docx")) {
-
-            XWPFDocument document =
-                    new XWPFDocument(
-                            new FileInputStream(savedFile)
-                    );
-
-            XWPFWordExtractor extractor =
-                    new XWPFWordExtractor(
-                            document
-                    );
-
-            extractedText =
-                    extractor.getText();
-
+        } else if (file.getOriginalFilename().endsWith(".docx")) {
+            XWPFDocument document = new XWPFDocument(new FileInputStream(savedFile));
+            XWPFWordExtractor extractor = new XWPFWordExtractor(document);
+            extractedText = extractor.getText();
             extractor.close();
+
+        } else {
+            extractedText = Files.readString(savedFile.toPath());
         }
 
-        // TXT
-
-        else {
-
-            extractedText =
-                    Files.readString(
-                            savedFile.toPath()
-                    );
-        }
-
-        // CHUNK TEXT
-
-        List<String> chunks =
-                chunkService.chunkText(
-                        extractedText,
-                        1000
-                );
-
-        // STORE EMBEDDINGS
-
+        // Chunk + embed + store
+        List<String> chunks = chunkService.chunkText(extractedText, 1000);
         for (String chunk : chunks) {
-
-            List<Double> embedding =
-                    embeddingService
-                            .createEmbedding(
-                                    chunk
-                            );
-
-            chromaService.storeChunk(
-
-                    UUID.randomUUID()
-                            .toString(),
-
-                    chunk,
-
-                    embedding
-            );
+            List<Double> embedding = embeddingService.createEmbedding(chunk);
+            chromaService.storeChunk(UUID.randomUUID().toString(), chunk, embedding);
         }
 
-        return ResponseEntity.ok(
-                "File uploaded and indexed successfully"
-        );
+        return ResponseEntity.ok("File uploaded and indexed successfully");
     }
 
+    // ── Get all ───────────────────────────────────────────────────────────────
     @GetMapping
     public List<AIDocument> getDocuments() {
-
         return repository.findAll();
     }
 
+    // ── Toggle include/exclude ────────────────────────────────────────────────
     @PutMapping("/{id}/toggle")
-    public ResponseEntity<?> toggleDocument(
-            @PathVariable Long id
-    ) {
-
-        AIDocument doc =
-                repository.findById(id)
-                        .orElseThrow();
-
-        doc.setIncluded(
-                !doc.isIncluded()
-        );
-
+    public ResponseEntity<?> toggleDocument(@PathVariable Long id) {
+        AIDocument doc = repository.findById(id).orElseThrow();
+        doc.setIncluded(!doc.isIncluded());
         repository.save(doc);
-
         return ResponseEntity.ok(doc);
+    }
+
+    // ── DELETE ────────────────────────────────────────────────────────────────
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteDocument(@PathVariable Long id) {
+        AIDocument doc = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Document not found: " + id));
+
+        // Delete the physical file from disk
+        File file = new File(doc.getFilePath());
+        if (file.exists()) {
+            file.delete();
+        }
+
+        // Remove from DB
+        repository.deleteById(id);
+
+        return ResponseEntity.ok("Document deleted successfully");
     }
 }

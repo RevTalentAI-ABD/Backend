@@ -109,4 +109,16 @@ public class EmployeeController {
     public ResponseEntity<?> create(@RequestBody CreateEmployeeRequest request) {
         return ResponseEntity.ok(employeeService.createEmployee(request));
     }
+
+    @PatchMapping("/employees/{id}/restore")
+    public ResponseEntity<?> restore(
+            @PathVariable Long id
+    ) {
+
+        employeeService.restore(id);
+
+        return ResponseEntity.ok(
+                "Employee restored successfully"
+        );
+    }
 }
