@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 import java.util.List;
 
@@ -77,19 +78,19 @@ public class LeaveController {
         }
         return ResponseEntity.ok(leaveService.getPendingLeaves());
     }
-
     @PutMapping("/{id}/approve")
-    public ResponseEntity<?> approve(@PathVariable Long id) {
+    public ResponseEntity<?> approve(@PathVariable Long id,
+                                     @RequestParam(required = false) String comment) {
         leaveService.approveLeave(id);
-        return ResponseEntity.ok("Leave approved successfully");
+        return ResponseEntity.ok(Map.of("message", "Leave approved successfully"));
     }
-
 
     @PutMapping("/{id}/reject")
     public ResponseEntity<?> reject(
             @PathVariable Long id,
             @RequestParam(required = false) String reason) {
         leaveService.rejectLeave(id, reason);
-        return ResponseEntity.ok("Leave rejected successfully");
+        return ResponseEntity.ok(Map.of("message", "Leave rejected successfully"));
     }
+
 }

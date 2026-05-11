@@ -17,6 +17,7 @@ public class EmployeeResponse {
     private String departmentName;
     private Long departmentId;
     private Long managerId;
+    private String managerName;
 
     // User info
     private String name;

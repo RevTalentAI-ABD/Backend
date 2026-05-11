@@ -48,6 +48,8 @@ public class EmployeeService {
                 .departmentId(emp.getDepartment() != null ? emp.getDepartment().getId() : null)
                 .departmentName(emp.getDepartment() != null ? emp.getDepartment().getName() : "N/A")
                 .managerId(emp.getManager() != null ? emp.getManager().getId() : null)
+                .managerName(emp.getManager() != null && emp.getManager().getUser() != null  // ← add this
+                        ? emp.getManager().getUser().getName() : "Not Assigned")
                 .status(emp.getStatus() != null ? emp.getStatus().name() : null)
                 .phone(emp.getPhone())
                 .address(emp.getAddress())
