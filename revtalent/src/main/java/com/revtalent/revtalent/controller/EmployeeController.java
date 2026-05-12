@@ -99,15 +99,6 @@ public class EmployeeController {
         String username = jwtUtil.extractUsername(token);
         return ResponseEntity.ok(employeeService.getByUsername(username));
     }
-//    @GetMapping("/manager/team")
-//    public ResponseEntity<List<EmployeeResponse>> getTeam() {
-//        return ResponseEntity.ok(employeeService.getTeam());
-//    }
-//
-//    @GetMapping("/manager/search")
-//    public ResponseEntity<List<EmployeeResponse>> searchTeam(@RequestParam String query) {
-//        return ResponseEntity.ok(employeeService.searchTeam(query));
-//    }
 
     @PostMapping("/employees")
     public ResponseEntity<?> create(@RequestBody CreateEmployeeRequest request) {

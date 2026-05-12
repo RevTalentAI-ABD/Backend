@@ -9,13 +9,13 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
+import org.hibernate.annotations.Check;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "user",
+@Table(name = "users",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uq_user_username", columnNames = "username"),
                 @UniqueConstraint(name = "uq_user_email", columnNames = "email")
@@ -31,7 +31,7 @@ import java.util.List;
         "authorities", "password", "passwordHash"})
 
 
-public class User implements UserDetails {
+public class Users implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -114,5 +114,44 @@ public class User implements UserDetails {
         MANAGER,
         HR_ADMIN,
         CANDIDATE
+    }
+    @Column(length = 100)
+    private String department;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    @JsonIgnoreProperties({
+            "employees",
+            "hibernateLazyInitializer",
+            "handler"
+    })
+    private Users manager;
+    public Long getManagerId() {
+
+        return manager != null
+                ? manager.getId()
+                : null;
+    }
+
+    public String getManagerEmail() {
+
+        return manager != null
+                ? manager.getEmail()
+                : null;
+    }
+
+    public String getManagerName() {
+
+        return manager != null
+                ? manager.getName()
+                : null;
+    }
+
+    @OneToMany(mappedBy = "manager")
+    @JsonIgnore
+    private List<Users> employees;
+    public String getDepartmentName() {
+
+        return department;
     }
 }

@@ -11,9 +11,7 @@ public class LeaveApplyDTO {
     private String leaveType;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fromDate;
-
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate toDate;
-
     private String reason;
 }

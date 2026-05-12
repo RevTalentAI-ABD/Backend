@@ -7,7 +7,7 @@ import com.revtalent.revtalent.dto.auth.UserResponse;
 import com.revtalent.revtalent.model.Employee;
 import com.revtalent.revtalent.model.LeaveBalance;
 import com.revtalent.revtalent.model.LeaveRequest;
-import com.revtalent.revtalent.model.User;
+import com.revtalent.revtalent.model.Users;
 import com.revtalent.revtalent.repository.DepartmentRepository;
 import com.revtalent.revtalent.repository.EmployeeRepository;
 import com.revtalent.revtalent.repository.LeaveBalanceRepository;
@@ -39,21 +39,21 @@ public class AuthService {
     public Map<String, String> login(LoginRequest req) {
 
         // Try username first, then fall back to email
-        User user = userRepo.findByUsername(req.getUsername().toLowerCase())
+        Users users = userRepo.findByUsername(req.getUsername().toLowerCase())
                 .or(() -> userRepo.findByEmail(req.getUsername().toLowerCase()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(req.getPassword(), users.getPasswordHash())) {
             throw new RuntimeException("Invalid password");
         }
 
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
+        String token = jwtUtil.generateToken(users.getUsername(), users.getRole().name());
 
         Map<String, String> res = new HashMap<>();
         res.put("token", token);
-        res.put("role",  user.getRole().name());
-        res.put("name",  user.getName());
-        res.put("email", user.getEmail());
+        res.put("role",  users.getRole().name());
+        res.put("name",  users.getName());
+        res.put("email", users.getEmail());
 
         return res;
     }
@@ -83,32 +83,32 @@ public class AuthService {
                 .trim()
                 .replace("HRADMIN", "HR_ADMIN")
                 .replace("HR ADMIN", "HR_ADMIN");
-        User.Role role = User.Role.valueOf(roleStr);
+        Users.Role role = Users.Role.valueOf(roleStr);
 
         // Build and save User
-        User user = new User();
-        user.setName(req.getName());
-        user.setUsername(req.getUsername().toLowerCase());
-        user.setEmail(req.getEmail().toLowerCase());
-        user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
-        user.setRole(role);
-        user.setActive(true);
+        Users users = new Users();
+        users.setName(req.getName());
+        users.setUsername(req.getUsername().toLowerCase());
+        users.setEmail(req.getEmail().toLowerCase());
+        users.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+        users.setRole(role);
+        users.setActive(true);
 
         // ── Candidates: save User only, no Employee record needed ─────────────
-        if (role == User.Role.CANDIDATE) {
-            User savedUser = userRepo.save(user);
+        if (role == Users.Role.CANDIDATE) {
+            Users savedUsers = userRepo.save(users);
             return UserResponse.builder()
-                    .id(savedUser.getId())
-                    .name(savedUser.getName())
-                    .username(savedUser.getUsername())
-                    .email(savedUser.getEmail())
-                    .role(savedUser.getRole().name())
+                    .id(savedUsers.getId())
+                    .name(savedUsers.getName())
+                    .username(savedUsers.getUsername())
+                    .email(savedUsers.getEmail())
+                    .role(savedUsers.getRole().name())
                     .build();
         }
 
         // ── Employees / Managers / HR: create Employee record + leave balances ─
         Employee emp = new Employee();
-        emp.setUser(user);
+        emp.setUser(users);
         emp.setStatus(Employee.Status.ACTIVE);
         emp.setJoiningDate(LocalDate.now());
 
@@ -126,13 +126,13 @@ public class AuthService {
         );
         leaveBalanceRepository.saveAll(balances);
 
-        User savedUser = saved.getUser();
+        Users savedUsers = saved.getUser();
         return UserResponse.builder()
-                .id(savedUser.getId())
-                .name(savedUser.getName())
-                .username(savedUser.getUsername())
-                .email(savedUser.getEmail())
-                .role(savedUser.getRole().name())
+                .id(savedUsers.getId())
+                .name(savedUsers.getName())
+                .username(savedUsers.getUsername())
+                .email(savedUsers.getEmail())
+                .role(savedUsers.getRole().name())
                 .build();
     }
 
@@ -156,14 +156,14 @@ public class AuthService {
     // ── Reset Password ────────────────────────────────────────────────────────
     @Transactional
     public void resetPassword(String email, String newPassword) {
-        User user = userRepo.findByEmail(email.toLowerCase())
+        Users users = userRepo.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new RuntimeException("No account found with this email"));
 
         if (newPassword == null || newPassword.length() < 8) {
             throw new RuntimeException("Password must be at least 8 characters");
         }
 
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        userRepo.save(user);
+        users.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepo.save(users);
     }
 }

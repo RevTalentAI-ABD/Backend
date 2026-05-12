@@ -33,9 +33,9 @@ class AttendanceServiceTest {
 
     @BeforeEach
     void setUp() {
-        User user = new User();
-        user.setId(1L);
-        user.setName("John Doe");
+        Users users = new Users();
+        users.setId(1L);
+        users.setName("John Doe");
 
         Department department = new Department();
         department.setId(1L);
@@ -44,7 +44,7 @@ class AttendanceServiceTest {
         employee = new Employee();
         employee.setId(1L);
         employee.setEmployeeCode("EMP001");
-        employee.setUser(user);
+        employee.setUsers(users);
         employee.setDepartment(department);
 
         attendance = Attendance.builder()

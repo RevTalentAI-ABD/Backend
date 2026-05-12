@@ -9,7 +9,7 @@ import com.revtalent.revtalent.dto.employee.ManagerProfileResponse;
 import com.revtalent.revtalent.exception.ResourceNotFoundException;
 import com.revtalent.revtalent.model.Department;
 import com.revtalent.revtalent.model.Employee;
-import com.revtalent.revtalent.model.User;
+import com.revtalent.revtalent.model.Users;
 import com.revtalent.revtalent.dto.employee.EmployeeResponse;
 import com.revtalent.revtalent.repository.DepartmentRepository;
 import com.revtalent.revtalent.repository.EmployeeRepository;
@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.revtalent.revtalent.dto.EmployeeCreateDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -125,19 +124,19 @@ public class EmployeeService {
             throw new IllegalArgumentException("Email already exists: " + request.getEmail());
         });
 
-        User user = new User();
-        user.setName(request.getName());
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        Users users = new Users();
+        users.setName(request.getName());
+        users.setUsername(request.getUsername());
+        users.setEmail(request.getEmail());
+        users.setPassword(passwordEncoder.encode(request.getPassword()));
         if (request.getRole() != null && !request.getRole().isBlank()) {
-            user.setRole(User.Role.valueOf(request.getRole().toUpperCase()));
+            users.setRole(Users.Role.valueOf(request.getRole().toUpperCase()));
         } else {
-            user.setRole(User.Role.EMPLOYEE);
+            users.setRole(Users.Role.EMPLOYEE);
         }
 
         Employee emp = new Employee();
-        emp.setUser(user);
+        emp.setUser(users);
         emp.setEmployeeCode(request.getEmployeeCode());
         emp.setDesignation(request.getDesignation());
         emp.setJoiningDate(request.getJoiningDate());
@@ -157,7 +156,7 @@ public class EmployeeService {
 
         emp.setEmployeeCode("EMP" + System.currentTimeMillis());
 
-        User user = new User();
+        Users users = new Users();
 
         String email = emp.getEmail();
 
@@ -169,17 +168,17 @@ public class EmployeeService {
             throw new RuntimeException("User already exists with this email");
         }
 
-        user.setUsername(email);
-        user.setEmail(email);
+        users.setUsername(email);
+        users.setEmail(email);
 
         // ✅ 🔥 CRITICAL FIX
-        user.setPasswordHash(passwordEncoder.encode("default123"));
+        users.setPasswordHash(passwordEncoder.encode("default123"));
 
-        user.setRole(User.Role.EMPLOYEE);
-        user.setActive(true);
+        users.setRole(Users.Role.EMPLOYEE);
+        users.setActive(true);
 
         // ✅ attach user
-        emp.setUser(user);
+        emp.setUser(users);
 
         // ✅ department mapping
         if (emp.getDepartment() != null && emp.getDepartment().getName() != null) {

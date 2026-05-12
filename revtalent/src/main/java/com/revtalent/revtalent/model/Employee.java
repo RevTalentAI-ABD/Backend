@@ -38,7 +38,7 @@ public class Employee {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "accountNonExpired",
             "accountNonLocked", "credentialsNonExpired", "enabled",
             "authorities", "password", "passwordHash", "employee"})
-    private User user;
+    private Users user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")

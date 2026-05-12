@@ -100,7 +100,7 @@
 package com.revtalent.revtalent.service;
 
 import com.revtalent.revtalent.model.Candidate;
-import com.revtalent.revtalent.model.User;
+import com.revtalent.revtalent.model.Users;
 import com.revtalent.revtalent.repository.CandidateRepository;
 import com.revtalent.revtalent.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -121,27 +121,27 @@ public class CandidateDashboardService {
     // ── Profile ───────────────────────────────────────────────────────────────
     @Transactional(readOnly = true)
     public Map<String, Object> getProfile(String username) {
-        User user = userRepository.findByUsername(username)
+        Users users = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
         return Map.of(
-                "id",        user.getId(),
-                "name",      user.getName() != null ? user.getName() : "",
-                "email",     user.getEmail(),
-                "username",  user.getUsername(),
-                "role",      user.getRole().name(),
-                "firstName", firstName(user.getName()),
-                "lastName",  lastName(user.getName())
+                "id",        users.getId(),
+                "name",      users.getName() != null ? users.getName() : "",
+                "email",     users.getEmail(),
+                "username",  users.getUsername(),
+                "role",      users.getRole().name(),
+                "firstName", firstName(users.getName()),
+                "lastName",  lastName(users.getName())
         );
     }
 
     // ── Applications — find all Candidate rows matching this user's email ─────
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getApplications(String username) {
-        User user = userRepository.findByUsername(username)
+        Users users = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
-        List<Candidate> candidates = candidateRepository.findByEmail(user.getEmail());
+        List<Candidate> candidates = candidateRepository.findByEmail(users.getEmail());
 
         return candidates.stream().map(c -> {
             Map<String, Object> m = new java.util.LinkedHashMap<>();
@@ -162,10 +162,10 @@ public class CandidateDashboardService {
     // ── Upcoming interviews — Candidate rows where status = INTERVIEW ─────────
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getUpcomingInterviews(String username) {
-        User user = userRepository.findByUsername(username)
+        Users users = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
-        List<Candidate> interviews = candidateRepository.findByEmail(user.getEmail())
+        List<Candidate> interviews = candidateRepository.findByEmail(users.getEmail())
                 .stream()
                 .filter(c -> c.getStatus() == Candidate.Status.INTERVIEW
                         && c.getInterviewDate() != null)
