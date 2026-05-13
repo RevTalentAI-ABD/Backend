@@ -17,7 +17,7 @@ public class OllamaService {
     private String callOllama(String prompt) {
         try {
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "phi3");
+            body.put("model", "mistral:7b");
             body.put("prompt", prompt);
             body.put("stream", false);
 
@@ -53,8 +53,9 @@ public class OllamaService {
     public String screenResume(String resume, String job) {
         String prompt = """
                 You are an HR recruiter.
-                Compare the resume with job description and:
-                - Give match percentage
+                Compare the resume with the job description.
+                IMPORTANT: Your response MUST start exactly with "SCORE: X" where X is a number from 0 to 100 representing the match percentage.
+                Then, on a new line, provide:
                 - Highlight strengths
                 - Highlight gaps
                 - Final recommendation

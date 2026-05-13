@@ -42,7 +42,7 @@ public class Notification {
     public enum Type {
         LEAVE,
         PAYROLL,
-        SYSTEM
-
+        SYSTEM,
+        ANNOUNCEMENT
     }
 }

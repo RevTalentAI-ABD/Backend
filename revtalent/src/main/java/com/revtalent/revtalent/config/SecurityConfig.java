@@ -58,7 +58,8 @@ public class SecurityConfig {
                                 "/api/candidate/**",
                                 "/api/auth/verify-otp",
                                 "/api/auth/resend-otp",
-                                "/api/auth/candidate/register"
+                                "/api/auth/candidate/register",
+                                "/api/hierarchy/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

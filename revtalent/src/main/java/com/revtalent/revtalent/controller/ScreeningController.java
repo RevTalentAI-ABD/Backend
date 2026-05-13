@@ -25,4 +25,10 @@ public class ScreeningController {
     public List<ScreeningResultDTO> rankCandidates(@PathVariable Long jobId) {
         return screeningService.rankCandidates(jobId);
     }
+
+    // 🤖 AI Candidate analysis
+    @GetMapping("/{candidateId}/ai-analysis")
+    public String getAiAnalysis(@PathVariable Long candidateId) {
+        return screeningService.getAiResumeAnalysis(candidateId);
+    }
 }

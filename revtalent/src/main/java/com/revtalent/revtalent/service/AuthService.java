@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,10 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final LeaveBalanceRepository leaveBalanceRepository;
     private final OtpService otpService;
+
+    // ── Temporary store for pending registrations (keyed by email) ──────────────
+    // Users are only written to the DB after OTP is verified.
+    private final Map<String, RegisterRequest> pendingRegistrations = new ConcurrentHashMap<>();
 
 
     public Map<String, String> login(LoginRequest req) {
@@ -58,55 +63,80 @@ public class AuthService {
         return res;
     }
 
-    // ── Verify OTP → only email verification (used after Register) ────────────
+    // ── Verify OTP → finalise registration only after OTP is correct ────────────
+    @Transactional
     public Map<String, String> verifyOtp(String email, String otp) {
         boolean valid = otpService.verifyOtp(email, otp);
         if (!valid) {
             throw new RuntimeException("Invalid OTP");
         }
 
+        // If there is a pending registration for this email, complete it now
+        RegisterRequest pending = pendingRegistrations.remove(email.toLowerCase());
+        if (pending != null) {
+            persistUser(pending);
+        }
+
         Map<String, String> res = new HashMap<>();
-        res.put("message", "Email verified successfully. Please login.");
+        res.put("message", "Email verified successfully. Registration complete. Please login.");
         return res;
     }
 
-    // ── Register ──────────────────────────────────────────────────────────────
-    @Transactional
-    public UserResponse register(RegisterRequest req) {
+    // ── Register → validate, cache, send OTP (NO DB write yet) ──────────────────
+    public Map<String, String> register(RegisterRequest req) {
+        String email = req.getEmail().toLowerCase();
+        String username = req.getUsername().toLowerCase();
 
-        userRepo.findByUsername(req.getUsername().toLowerCase())
-                .ifPresent(u -> { throw new RuntimeException("Username already exists"); });
+        // Validate uniqueness before caching
+        userRepo.findByUsername(username)
+                .ifPresent(u -> { throw new RuntimeException("Username already taken"); });
+        userRepo.findByEmail(email)
+                .ifPresent(u -> { throw new RuntimeException("Email already registered"); });
 
-        // Parse role
+        // Validate role
         String roleStr = req.getRole()
-                .toUpperCase()
-                .trim()
+                .toUpperCase().trim()
+                .replace("HRADMIN", "HR_ADMIN")
+                .replace("HR ADMIN", "HR_ADMIN");
+        Users.Role.valueOf(roleStr); // throws IllegalArgumentException if invalid
+
+        // Cache pending registration — no DB write yet
+        req.setEmail(email);
+        req.setUsername(username);
+        pendingRegistrations.put(email, req);
+
+        // Send OTP to the provided email
+        otpService.generateAndSendOtp(email);
+
+        Map<String, String> res = new HashMap<>();
+        res.put("message", "OTP sent to " + email + ". Please verify to complete registration.");
+        return res;
+    }
+
+    // ── Internal: actually persist the user once OTP is verified ─────────────────
+    @Transactional
+    private void persistUser(RegisterRequest req) {
+        String roleStr = req.getRole()
+                .toUpperCase().trim()
                 .replace("HRADMIN", "HR_ADMIN")
                 .replace("HR ADMIN", "HR_ADMIN");
         Users.Role role = Users.Role.valueOf(roleStr);
 
-        // Build and save User
         Users users = new Users();
         users.setName(req.getName());
-        users.setUsername(req.getUsername().toLowerCase());
-        users.setEmail(req.getEmail().toLowerCase());
+        users.setUsername(req.getUsername());
+        users.setEmail(req.getEmail());
         users.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         users.setRole(role);
         users.setActive(true);
 
-        // ── Candidates: save User only, no Employee record needed ─────────────
+        // Candidates: save User only, no Employee record
         if (role == Users.Role.CANDIDATE) {
-            Users savedUsers = userRepo.save(users);
-            return UserResponse.builder()
-                    .id(savedUsers.getId())
-                    .name(savedUsers.getName())
-                    .username(savedUsers.getUsername())
-                    .email(savedUsers.getEmail())
-                    .role(savedUsers.getRole().name())
-                    .build();
+            userRepo.save(users);
+            return;
         }
 
-        // ── Employees / Managers / HR: create Employee record + leave balances ─
+        // Employees / Managers / HR: create Employee + leave balances
         Employee emp = new Employee();
         emp.setUser(users);
         emp.setStatus(Employee.Status.ACTIVE);
@@ -125,15 +155,6 @@ public class AuthService {
                 createBalance(saved, LeaveRequest.LeaveType.ANNUAL,  15)
         );
         leaveBalanceRepository.saveAll(balances);
-
-        Users savedUsers = saved.getUser();
-        return UserResponse.builder()
-                .id(savedUsers.getId())
-                .name(savedUsers.getName())
-                .username(savedUsers.getUsername())
-                .email(savedUsers.getEmail())
-                .role(savedUsers.getRole().name())
-                .build();
     }
 
     // ── Helper ────────────────────────────────────────────────────────────────

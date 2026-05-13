@@ -62,8 +62,13 @@ public class LeaveController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isManager = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+        boolean isHrAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_HR_ADMIN"));
+        
         if (isManager) {
             return ResponseEntity.ok(leaveService.getAllLeavesForManager(auth.getName()));
+        } else if (isHrAdmin) {
+            return ResponseEntity.ok(leaveService.getAllLeavesForHR());
         }
         return ResponseEntity.ok(leaveService.getAllLeaves());
     }
@@ -73,8 +78,13 @@ public class LeaveController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isManager = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+        boolean isHrAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_HR_ADMIN"));
+                
         if (isManager) {
             return ResponseEntity.ok(leaveService.getPendingLeavesForManager(auth.getName()));
+        } else if (isHrAdmin) {
+            return ResponseEntity.ok(leaveService.getPendingLeavesForHR());
         }
         return ResponseEntity.ok(leaveService.getPendingLeaves());
     }

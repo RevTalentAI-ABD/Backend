@@ -31,6 +31,8 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
         try {
             return ResponseEntity.ok(authService.register(req));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body("Invalid role: " + e.getMessage());
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(e.getMessage());
         }

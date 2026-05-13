@@ -128,4 +128,53 @@ public class NotificationService {
                 .collect(Collectors.toList());
     }
 
+    // ── Targeted helpers used by Leave & Announcement flows ───────────────────
+
+    /** Send a notification directly to a specific employee. */
+    @Transactional
+    public void sendToEmployee(Long employeeId, String message, Notification.Type type) {
+        Employee emp = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found: " + employeeId));
+        Notification n = new Notification();
+        n.setEmployee(emp);
+        n.setMessage(message);
+        n.setType(type);
+        notificationRepository.save(n);
+    }
+
+    /** Send a notification to the manager of a given employee. */
+    @Transactional
+    public void sendToManager(Long employeeId, String message, Notification.Type type) {
+        Employee emp = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found: " + employeeId));
+        Employee manager = emp.getManager();
+        if (manager == null) return; // no manager assigned — skip silently
+        Notification n = new Notification();
+        n.setEmployee(manager);
+        n.setMessage(message);
+        n.setType(type);
+        notificationRepository.save(n);
+    }
+
+    /** Broadcast an announcement as a notification to ALL managers. */
+    @Transactional
+    public void broadcastAnnouncementToAllManagers(String message) {
+        List<Employee> allManagers = employeeRepository.findAll().stream()
+                .filter(e -> e.getUser() != null
+                        && e.getUser().getRole() != null
+                        && "MANAGER".equals(e.getUser().getRole().name()))
+                .collect(Collectors.toList());
+
+        List<Notification> notifications = allManagers.stream()
+                .map(manager -> {
+                    Notification n = new Notification();
+                    n.setEmployee(manager);
+                    n.setMessage(message);
+                    n.setType(Notification.Type.ANNOUNCEMENT);
+                    return n;
+                })
+                .collect(Collectors.toList());
+        notificationRepository.saveAll(notifications);
+    }
+
 }

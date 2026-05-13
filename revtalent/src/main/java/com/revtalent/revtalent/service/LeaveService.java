@@ -27,6 +27,7 @@ public class LeaveService {
     private final LeaveRequestRepository leaveRepository;
     private final LeaveBalanceRepository leaveBalanceRepository;
     private final EmployeeRepository employeeRepository;
+    private final NotificationService notificationService;
 
     // ── Helper ───────────────────────────────────────────────────────────────
 
@@ -96,7 +97,18 @@ public class LeaveService {
         leave.setTotalDays(BigDecimal.valueOf(days));
         leave.setStatus(LeaveRequest.Status.APPLIED);
 
-        return LeaveHistoryDTO.from(leaveRepository.save(leave));
+        LeaveHistoryDTO result = LeaveHistoryDTO.from(leaveRepository.save(leave));
+
+        // 🔔 Notify manager about the leave application
+        notificationService.sendToManager(
+                employee.getId(),
+                "📋 Leave Request: " + employee.getName() + " applied for " +
+                        leave.getTotalDays() + " day(s) of " + leave.getLeaveType().name() +
+                        " leave from " + leave.getStartDate() + " to " + leave.getEndDate() + ".",
+                com.revtalent.revtalent.model.Notification.Type.LEAVE
+        );
+
+        return result;
     }
 
     // From HRModule — accepts LeaveRequestDTO (manager/HR-facing)
@@ -146,6 +158,22 @@ public class LeaveService {
                 .collect(Collectors.toList());
     }
 
+    public List<LeaveRequestDTO> getPendingLeavesForHR() {
+        return leaveRepository.findByStatus(LeaveRequest.Status.APPLIED).stream()
+                .filter(l -> l.getEmployee() != null && l.getEmployee().getUser() != null)
+                .filter(l -> "MANAGER".equals(l.getEmployee().getUser().getRole().name()) || l.getEmployee().getManager() == null)
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<LeaveRequestDTO> getAllLeavesForHR() {
+        return leaveRepository.findAll().stream()
+                .filter(l -> l.getEmployee() != null && l.getEmployee().getUser() != null)
+                .filter(l -> "MANAGER".equals(l.getEmployee().getUser().getRole().name()) || l.getEmployee().getManager() == null)
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     public List<LeaveRequestDTO> getPendingLeavesForManager(String username) {
         Employee manager = employeeRepository.findByUser_Username(username)
                 .orElseThrow(() -> new RuntimeException("Manager not found"));
@@ -180,6 +208,15 @@ public class LeaveService {
             balance.setUsedDays(balance.getUsedDays().add(leave.getTotalDays()));
             leaveBalanceRepository.save(balance);
         });
+
+        // 🔔 Notify employee that their leave was approved
+        notificationService.sendToEmployee(
+                leave.getEmployee().getId(),
+                "✅ Your leave request for " + leave.getTotalDays() + " day(s) of " +
+                        leave.getLeaveType().name() + " leave (" + leave.getStartDate() +
+                        " to " + leave.getEndDate() + ") has been APPROVED.",
+                com.revtalent.revtalent.model.Notification.Type.LEAVE
+        );
     }
 
     // From HRModule — returns LeaveResponse after approval
@@ -210,6 +247,16 @@ public class LeaveService {
         leave.setRejectionReason(rejectionReason);
         leave.setActionedAt(LocalDateTime.now());
         leaveRepository.save(leave);
+
+        // 🔔 Notify employee that their leave was rejected
+        notificationService.sendToEmployee(
+                leave.getEmployee().getId(),
+                "❌ Your leave request for " + leave.getTotalDays() + " day(s) of " +
+                        leave.getLeaveType().name() + " leave (" + leave.getStartDate() +
+                        " to " + leave.getEndDate() + ") has been REJECTED." +
+                        (rejectionReason != null ? " Reason: " + rejectionReason : ""),
+                com.revtalent.revtalent.model.Notification.Type.LEAVE
+        );
     }
 
     // From HRModule — returns LeaveResponse after rejection

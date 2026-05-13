@@ -50,6 +50,8 @@ public class CandidateService {
                 // interviewer fields — safe nulls
                 .interviewerId(interviewer != null ? interviewer.getId() : null)
                 .interviewerName(interviewer != null ? interviewer.getName() : null)
+                .aiScore(c.getAiScore())
+                .aiSummary(c.getAiSummary())
                 .build();
     }
 

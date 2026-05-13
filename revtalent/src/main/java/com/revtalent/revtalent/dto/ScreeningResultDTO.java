@@ -11,4 +11,5 @@ public class ScreeningResultDTO {
     private Long candidateId;
     private String name;
     private double score;
+    private String aiSummary;
 }

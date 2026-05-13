@@ -30,4 +30,6 @@ public class CandidateResponse {
     private LocalDateTime updatedAt;
     private Long   interviewerId;
     private String interviewerName;
+    private Double aiScore;
+    private String aiSummary;
 }

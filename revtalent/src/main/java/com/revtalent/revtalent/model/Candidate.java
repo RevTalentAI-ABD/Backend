@@ -69,6 +69,12 @@ public class Candidate {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "ai_score")
+    private Double aiScore;
+
+    @Column(name = "ai_summary", columnDefinition = "TEXT")
+    private String aiSummary;
+
     @PrePersist
     protected void onCreate() {
         appliedAt = LocalDateTime.now();

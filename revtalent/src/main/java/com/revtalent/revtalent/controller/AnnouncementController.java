@@ -2,6 +2,7 @@ package com.revtalent.revtalent.controller;
 
 import com.revtalent.revtalent.model.Announcement;
 import com.revtalent.revtalent.repository.AnnouncementRepository;
+import com.revtalent.revtalent.service.NotificationService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,18 +18,28 @@ public class AnnouncementController {
     @Autowired
     private AnnouncementRepository repository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     // GET ALL
     @GetMapping
     public List<Announcement> getAll() {
         return repository.findAll();
     }
 
-    // CREATE
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Announcement announcement) {
         try {
-            System.out.println("Received: " + announcement.getTitle());
+            announcement.setCreatedAt(
+                    java.time.LocalDateTime.now()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            );
             Announcement saved = repository.save(announcement);
+
+            // 📣 Notify all managers about this announcement
+            String notifMessage = "📢 New Announcement: " + saved.getTitle() + " — " + saved.getMessage();
+            notificationService.broadcastAnnouncementToAllManagers(notifMessage);
+
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
             e.printStackTrace();

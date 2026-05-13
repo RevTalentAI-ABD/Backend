@@ -178,6 +178,7 @@ public class ResumeService {
 
     private final ResumeRepository resumeRepository;
     private final CandidateRepository candidateRepository;
+    private final ResumeScreeningService resumeScreeningService;
 
     // ── record for download response ──────────────────────────────────────────
     public record ResumeFile(byte[] data, String contentType, String filename) {}
@@ -200,6 +201,9 @@ public class ResumeService {
                     .orElseThrow(() -> new RuntimeException("Candidate not found: " + candidateId));
             candidate.setResumeMongoId(saved.getId());
             candidateRepository.save(candidate);
+
+            // 3. Trigger async background AI scoring
+            resumeScreeningService.processCandidateAiScoreAsync(candidateId);
 
             Map<String, Object> result = new HashMap<>();
             result.put("resumeId", saved.getId());
