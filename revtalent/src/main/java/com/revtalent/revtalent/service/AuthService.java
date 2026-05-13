@@ -59,6 +59,10 @@ public class AuthService {
         res.put("role",  users.getRole().name());
         res.put("name",  users.getName());
         res.put("email", users.getEmail());
+        res.put("id", users.getId().toString());
+        if (users.getEmployee() != null) {
+            res.put("employeeId", users.getEmployee().getId().toString());
+        }
 
         return res;
     }

@@ -61,19 +61,40 @@ public class HierarchyService {
     }
 
     // POST /api/hierarchy/assign
+    @org.springframework.transaction.annotation.Transactional
     public void assignEmployeesToManager(Long managerId, List<Long> employeeIds) {
         Users managerUser = usersRepository.findById(managerId)
                 .orElseThrow(() -> new RuntimeException("Manager not found: " + managerId));
+                
+        Employee managerEntity = employeeRepository.findByUser_Id(managerId).orElse(null);
 
         List<Users> employees = usersRepository.findAllById(employeeIds);
         for (Users empUser : employees) {
             empUser.setManager(managerUser);
+            empUser.setDepartment(managerUser.getDepartment()); // Sync Users department
             
             // Sync with Employee entity
-            Employee employeeEntity = empUser.getEmployee();
-            Employee managerEntity = managerUser.getEmployee();
-            if (employeeEntity != null) {
+            Employee employeeEntity = employeeRepository.findByUser_Id(empUser.getId()).orElse(null);
+            if (employeeEntity != null && managerEntity != null) {
                 employeeEntity.setManager(managerEntity);
+                employeeEntity.setDepartment(managerEntity.getDepartment()); // Sync Employee department
+                employeeRepository.save(employeeEntity);
+            }
+        }
+        usersRepository.saveAll(employees);
+    }
+
+    // POST /api/hierarchy/unassign
+    @org.springframework.transaction.annotation.Transactional
+    public void unassignEmployeesFromManager(List<Long> employeeIds) {
+        List<Users> employees = usersRepository.findAllById(employeeIds);
+        for (Users empUser : employees) {
+            empUser.setManager(null);
+            
+            // Sync with Employee entity
+            Employee employeeEntity = employeeRepository.findByUser_Id(empUser.getId()).orElse(null);
+            if (employeeEntity != null) {
+                employeeEntity.setManager(null);
                 employeeRepository.save(employeeEntity);
             }
         }

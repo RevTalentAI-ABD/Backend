@@ -53,4 +53,21 @@ public class HierarchyController {
         hierarchyService.assignEmployeesToManager(managerId, employeeIds);
         return ResponseEntity.ok(Map.of("success", true));
     }
+
+    /**
+     * POST /api/hierarchy/unassign
+     * Unassigns a list of employees from their current manager.
+     * Body: { "employeeIds": [201, 202] }
+     */
+    @PostMapping("/unassign")
+    public ResponseEntity<Map<String, Object>> unassignEmployees(
+            @RequestBody Map<String, Object> body) {
+
+        @SuppressWarnings("unchecked")
+        List<Integer> rawIds = (List<Integer>) body.get("employeeIds");
+        List<Long> employeeIds = rawIds.stream().map(Long::valueOf).toList();
+
+        hierarchyService.unassignEmployeesFromManager(employeeIds);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
 }

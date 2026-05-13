@@ -44,6 +44,9 @@ public class LeaveService {
                 .employeeName(leave.getEmployee() != null && leave.getEmployee().getUser() != null
                         ? leave.getEmployee().getUser().getUsername()
                         : "N/A")
+                .employeeRole(leave.getEmployee() != null && leave.getEmployee().getUser() != null
+                        ? leave.getEmployee().getUser().getRole().name()
+                        : "")
                 .leaveType(leave.getLeaveType().name())
                 .startDate(leave.getStartDate())
                 .endDate(leave.getEndDate())

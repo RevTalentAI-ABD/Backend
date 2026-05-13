@@ -20,6 +20,7 @@ public class LeaveRequestDTO {
     // ── Response fields (from HEAD) ──────────────────────────────────────────
     private Long id;
     private String employeeName;
+    private String employeeRole;
 
     // ── Common fields ────────────────────────────────────────────────────────
     private String leaveType;
