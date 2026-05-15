@@ -17,4 +17,8 @@ public interface CandidateRepository extends JpaRepository<Candidate, Long> {
 
     List<Candidate> findByEmail(String email);
     List<Candidate> findByJobPosting_Id(Long jobId);
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"jobPosting"})
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Candidate c WHERE c.id = :id")
+    java.util.Optional<Candidate> findByIdWithJobPosting(@org.springframework.data.repository.query.Param("id") Long id);
 }

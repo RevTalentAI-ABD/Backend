@@ -17,7 +17,7 @@ public class OllamaService {
     private String callOllama(String prompt) {
         try {
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "mistral:7b");
+            body.put("model", "mistral");
             body.put("prompt", prompt);
             body.put("stream", false);
 

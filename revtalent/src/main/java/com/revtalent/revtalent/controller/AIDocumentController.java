@@ -202,4 +202,29 @@ public class AIDocumentController {
 
         return ResponseEntity.ok(doc);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteDocument(
+            @PathVariable Long id
+    ) {
+
+        AIDocument doc =
+                repository.findById(id)
+                        .orElseThrow();
+
+        // Delete from file system
+        try {
+            File file = new File(doc.getFilePath());
+            if (file.exists()) {
+                file.delete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Delete from database
+        repository.delete(doc);
+
+        return ResponseEntity.ok("Document deleted successfully");
+    }
 }

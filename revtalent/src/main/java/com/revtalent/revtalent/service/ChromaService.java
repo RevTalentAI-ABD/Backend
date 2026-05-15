@@ -121,7 +121,7 @@ public class ChromaService {
             restTemplate.postForEntity(
 
                     CHROMA_URL +
-                            "/api/v1/collections/" +
+                            "/api/v2/tenants/default_tenant/databases/default_database/collections/" +
                             collectionId +
                             "/add",
 
@@ -174,7 +174,7 @@ public class ChromaService {
                     restTemplate.postForEntity(
 
                             CHROMA_URL +
-                                    "/api/v1/collections/" +
+                                    "/api/v2/tenants/default_tenant/databases/default_database/collections/" +
                                     collectionId +
                                     "/query",
 
@@ -221,7 +221,7 @@ public class ChromaService {
                 restTemplate.getForObject(
 
                         CHROMA_URL +
-                                "/api/v1/collections",
+                                "/api/v2/tenants/default_tenant/databases/default_database/collections",
 
                         String.class
                 );

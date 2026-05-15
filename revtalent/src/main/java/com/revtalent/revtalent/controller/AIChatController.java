@@ -10,16 +10,14 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 
+import com.revtalent.revtalent.service.ChromaService;
+import com.revtalent.revtalent.service.OllamaEmbeddingService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.client.RestTemplate;
-
-import java.io.File;
-import java.io.FileInputStream;
-
-import java.nio.file.Files;
 
 import java.util.*;
 
@@ -29,7 +27,10 @@ import java.util.*;
 public class AIChatController {
 
     @Autowired
-    private AIDocumentRepository repository;
+    private ChromaService chromaService;
+
+    @Autowired
+    private OllamaEmbeddingService embeddingService;
 
     @PostMapping("/ask")
     public Map<String, String> askAI(
@@ -41,93 +42,19 @@ public class AIChatController {
             String question =
                     request.getQuestion();
 
-            List<AIDocument> docs =
-                    repository.findByIncludedTrue();
+            List<Double> embedding =
+                    embeddingService.createEmbedding(question);
+
+            List<String> chunks =
+                    chromaService.search(embedding);
 
             StringBuilder context =
                     new StringBuilder();
 
-            // READ DOCUMENTS
+            for (String chunk : chunks) {
 
-            for (AIDocument doc : docs) {
-
-                try {
-
-                    File file =
-                            new File(
-                                    doc.getFilePath()
-                            );
-
-                    if (!file.exists()) {
-                        continue;
-                    }
-
-                    String text = "";
-
-                    // PDF
-
-                    if (doc.getFileName()
-                            .endsWith(".pdf")) {
-
-                        PDDocument pdf =
-                                PDDocument.load(file);
-
-                        PDFTextStripper stripper =
-                                new PDFTextStripper();
-
-                        text =
-                                stripper.getText(pdf);
-
-                        pdf.close();
-                    }
-
-                    // DOCX
-
-                    else if (doc.getFileName()
-                            .endsWith(".docx")) {
-
-                        XWPFDocument document =
-                                new XWPFDocument(
-                                        new FileInputStream(file)
-                                );
-
-                        XWPFWordExtractor extractor =
-                                new XWPFWordExtractor(document);
-
-                        text =
-                                extractor.getText();
-
-                        extractor.close();
-                    }
-
-                    // TXT
-
-                    else {
-
-                        text =
-                                Files.readString(
-                                        file.toPath()
-                                );
-                    }
-
-                    // LIMIT CONTEXT SIZE
-
-                    if (text.length() > 2000) {
-
-                        text =
-                                text.substring(
-                                        0,
-                                        2000
-                                );
-                    }
-
-                    context.append(text)
-                            .append("\n\n");
-
-                } catch (Exception e) {
-
-                    e.printStackTrace();
-                }
+                context.append(chunk)
+                        .append("\n\n");
             }
 
             // FINAL PROMPT
@@ -135,18 +62,14 @@ public class AIChatController {
             String finalPrompt =
 
                     """
-                    You are an intelligent HR AI assistant.
+                    You are an intelligent HR AI assistant for the company RevTalent.
 
-                    Answer clearly and briefly.
+                    Answer the user's question directly and concisely using ONLY the provided HR Documents Context.
+                    DO NOT mention that you are getting this from a document, and DO NOT say phrases like "as per the provided documents" or "in the documents". Just give the exact, pin-point answer.
 
-                    Use ONLY the provided HR documents.
+                    If the exact answer is not found in the context, provide a general related answer based on your knowledge, but keep it strictly professional and to the point. DO NOT mention that you couldn't find it in the documents.
 
-                    If answer is not found,
-                    say:
-
-                    "Information not found in uploaded documents."
-
-                    HR Documents:
+                    HR Documents Context:
                     """
                             +
 
@@ -170,7 +93,7 @@ public class AIChatController {
 
             body.put(
                     "model",
-                    "mistral:7b"
+                    "mistral"
             );
 
             body.put(

@@ -22,7 +22,7 @@ public class ResumeScreeningService {
 
     // 🔹 AI Candidate analysis
     public String getAiResumeAnalysis(Long candidateId) {
-        Candidate candidate = candidateRepository.findById(candidateId)
+        Candidate candidate = candidateRepository.findByIdWithJobPosting(candidateId)
                 .orElseThrow(() -> new RuntimeException("Candidate not found"));
 
         if (candidate.getResumeMongoId() == null) {
@@ -43,9 +43,10 @@ public class ResumeScreeningService {
 
     // 🔹 Async background AI processing
     @Async
+    @org.springframework.transaction.annotation.Transactional
     public void processCandidateAiScoreAsync(Long candidateId) {
         try {
-            Candidate candidate = candidateRepository.findById(candidateId).orElse(null);
+            Candidate candidate = candidateRepository.findByIdWithJobPosting(candidateId).orElse(null);
             if (candidate == null || candidate.getResumeMongoId() == null || candidate.getJobPosting() == null) {
                 return;
             }

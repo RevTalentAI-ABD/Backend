@@ -277,11 +277,26 @@ public class ResumeService {
 
     // ── Basic text extraction helper ──────────────────────────────────────────
     private String extractText(MultipartFile file) {
+        if (file.isEmpty()) return "";
+        String filename = file.getOriginalFilename();
+        if (filename == null) return "";
+        filename = filename.toLowerCase();
+
         try {
-            // Simple: just read bytes as string for now
-            // TODO: use Apache Tika or PDFBox for proper extraction
+            if (filename.endsWith(".pdf")) {
+                try (org.apache.pdfbox.pdmodel.PDDocument document = org.apache.pdfbox.pdmodel.PDDocument.load(file.getInputStream())) {
+                    org.apache.pdfbox.text.PDFTextStripper stripper = new org.apache.pdfbox.text.PDFTextStripper();
+                    return stripper.getText(document);
+                }
+            } else if (filename.endsWith(".docx")) {
+                try (org.apache.poi.xwpf.extractor.XWPFWordExtractor extractor = new org.apache.poi.xwpf.extractor.XWPFWordExtractor(
+                        new org.apache.poi.xwpf.usermodel.XWPFDocument(file.getInputStream()))) {
+                    return extractor.getText();
+                }
+            }
             return new String(file.getBytes());
-        } catch (IOException e) {
+        } catch (Exception e) {
+            System.err.println("Failed to extract text from resume: " + e.getMessage());
             return "";
         }
     }
